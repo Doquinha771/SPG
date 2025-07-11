@@ -300,6 +300,7 @@
     <audio id="audio-player" crossorigin="anonymous"></audio>
     <div id="youtube-player"></div>
 
+    <script src="https://www.youtube.com/iframe_api"></script>
     <script>
         const albums = [
             {
@@ -347,11 +348,10 @@
         let progressInterval;
         let animationFrameId;
 
-        // This function is called by the YouTube API when it's ready
         window.onYouTubeIframeAPIReady = () => {
             ytPlayer = new YT.Player('youtube-player', {
                 height: '0', width: '0',
-                playerVars: { 'controls': 0, 'disablekb': 1 },
+                playerVars: { 'controls': 0, 'disablekb': 1, 'playsinline': 1 },
                 events: { 
                     'onReady': onPlayerReady,
                     'onStateChange': onPlayerStateChange 
@@ -369,7 +369,9 @@
         }
 
         function onPlayerStateChange(event) {
-            if (event.data === YT.PlayerState.CUED) ytPlayer.playVideo();
+            if (event.data === YT.PlayerState.CUED) {
+                event.target.playVideo();
+            }
             if (event.data === YT.PlayerState.PLAYING) setPlayState(true);
             else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) setPlayState(false);
             if (event.data === YT.PlayerState.ENDED) playNext();
