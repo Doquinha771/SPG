@@ -211,31 +211,38 @@
         .cassette-artist { font-size: 0.6rem; }
         
         /* --- Special Effects & Players --- */
-        #special-effect-dove {
-            position: fixed; display: none; top: 10%; left: -150px;
-            width: 130px; height: auto; pointer-events: none; opacity: 0; z-index: 5;
+        .special-effect-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 5;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
         }
-        #special-effect-dove.animate { display: block; animation: fly-across-sky 25s linear infinite; }
+        .special-effect-overlay.active {
+            opacity: 1;
+        }
+
+        #special-effect-dove {
+            left: -150px;
+            width: 130px; height: auto;
+        }
+        #special-effect-dove.animate {
+            animation: fly-across-sky 25s linear infinite;
+        }
         @keyframes fly-across-sky {
-            0% { transform: translateX(0) scaleX(1); opacity: 0; }
+            0% { transform: translate(0, 10vh) scaleX(1); opacity: 0; }
             10% { opacity: 0.9; }
             90% { opacity: 0.9; }
-            100% { transform: translateX(100vw + 150px) scaleX(1); opacity: 0; }
+            100% { transform: translate(100vw, 10vh) scaleX(1); opacity: 0; }
         }
         
         #blood-effect {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background-image: url('https://pluspng.com/img-png/blood-splatter-png-hd-blood-splatter-png-image-2000.png');
-            background-size: 150%;
-            background-position: top center;
-            background-repeat: no-repeat;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.5s ease-in-out;
+            background-size: 150%; background-position: top center; background-repeat: no-repeat;
             mix-blend-mode: screen;
         }
         #blood-effect.active {
@@ -245,6 +252,27 @@
         @keyframes drip {
             from { background-position: top center; }
             to { background-position: bottom center; }
+        }
+
+        #jogo-do-bicho-effect span {
+            position: absolute;
+            font-size: 3rem;
+            opacity: 0;
+            animation: float-up 10s linear infinite;
+            text-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
+        }
+        #jogo-do-bicho-effect span:nth-child(1) { top: 80%; left: 10%; animation-delay: 0s; }
+        #jogo-do-bicho-effect span:nth-child(2) { top: 85%; left: 30%; animation-delay: 2s; animation-duration: 8s; font-size: 4rem; }
+        #jogo-do-bicho-effect span:nth-child(3) { top: 90%; left: 50%; animation-delay: 4s; }
+        #jogo-do-bicho-effect span:nth-child(4) { top: 80%; left: 70%; animation-delay: 6s; animation-duration: 12s; font-size: 2.5rem; }
+        #jogo-do-bicho-effect span:nth-child(5) { top: 85%; left: 90%; animation-delay: 8s; }
+        #jogo-do-bicho-effect span:nth-child(6) { top: 90%; left: 20%; animation-delay: 5s; font-size: 3.5rem; }
+        #jogo-do-bicho-effect span:nth-child(7) { top: 80%; left: 60%; animation-delay: 1s; animation-duration: 7s; }
+
+        @keyframes float-up {
+            0% { transform: translateY(0); opacity: 0; }
+            10%, 90% { opacity: 0.7; }
+            100% { transform: translateY(-100vh); opacity: 0; }
         }
 
         #youtube-player { position: absolute; top: -9999px; left: -9999px; }
@@ -294,8 +322,11 @@
         </div>
     </div>
     
-    <div id="special-effect-dove">
+    <div id="special-effect-dove" class="special-effect-overlay">
         <img src="https://png.pngtree.com/png-clipart/20230504/original/pngtree-white-dove-flying-isolated-on-background-png-image_9137695.png" alt="Pomba Branca" style="width:100%">
+    </div>
+    <div id="jogo-do-bicho-effect" class="special-effect-overlay">
+        <span>🐘</span> <span>🐓</span> <span>🐅</span> <span>🐏</span> <span>🦋</span> <span>🐍</span> <span>💰</span>
     </div>
     <audio id="audio-player" crossorigin="anonymous"></audio>
     <div id="youtube-player"></div>
@@ -307,7 +338,7 @@
                 artist: "SPG",
                 title: "O Segredo da Felicidade",
                 tracks: [
-                    { title: "Jogo do Bicho", youtubeId: "KNXJe2RxB_o" },
+                    { title: "Jogo do Bicho", youtubeId: "KNXJe2RxB_o", specialEffect: "bicho" },
                     { title: "Assassinatos", youtubeId: "sGWljyo4Zv0", specialEffect: "blood" },
                 ]
             },
@@ -336,6 +367,7 @@
             equalizer: document.getElementById('equalizer'),
             doveElement: document.getElementById('special-effect-dove'),
             bloodEffect: document.getElementById('blood-effect'),
+            jogoDoBichoEffect: document.getElementById('jogo-do-bicho-effect'),
         };
 
         let ytPlayer;
@@ -421,6 +453,7 @@
             // Clear all special effects before applying new ones
             dom.doveElement.classList.remove('animate');
             dom.bloodEffect.classList.remove('active');
+            dom.jogoDoBichoEffect.classList.remove('active');
 
             if (isPlaying) {
                 if (activePlayerType === 'audio') dom.audioPlayer.play().catch(e => console.error(e));
@@ -434,6 +467,9 @@
                 }
                 if (currentTrack.specialEffect === 'blood') {
                     dom.bloodEffect.classList.add('active');
+                }
+                if (currentTrack.specialEffect === 'bicho') {
+                    dom.jogoDoBichoEffect.classList.add('active');
                 }
 
             } else {
