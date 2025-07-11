@@ -103,6 +103,11 @@
             gap: 20px;
             position: relative;
             overflow: hidden; /* To contain the blood effect */
+            transition: opacity 0.3s ease;
+        }
+        .car-stereo-unit.loading {
+            opacity: 0.7;
+            pointer-events: none;
         }
 
         .main-display {
@@ -262,7 +267,7 @@
     </div>
     
     <div class="app-container">
-        <div class="car-stereo-unit">
+        <div class="car-stereo-unit" id="car-stereo-unit">
             <div id="blood-effect"></div>
             <div class="main-display">
                 <div id="track-info">SPG Road Trip</div>
@@ -316,6 +321,7 @@
         ];
 
         const dom = {
+            stereoUnit: document.getElementById('car-stereo-unit'),
             cassetteLibrary: document.getElementById('cassette-library'),
             trackInfo: document.getElementById('track-info'),
             timeInfo: document.getElementById('time-info'),
@@ -341,6 +347,7 @@
         let progressInterval;
         let animationFrameId;
 
+        // This function is called by the YouTube API when it's ready
         window.onYouTubeIframeAPIReady = () => {
             ytPlayer = new YT.Player('youtube-player', {
                 height: '0', width: '0',
@@ -354,6 +361,7 @@
         
         function onPlayerReady(event) {
             isYtReady = true;
+            dom.stereoUnit.classList.remove('loading');
             if (pendingTrack) {
                 loadTrack(pendingTrack.albumIndex, pendingTrack.trackIndex);
                 pendingTrack = null;
@@ -376,20 +384,25 @@
         }
 
         function loadTrack(albumIndex, trackIndex) {
-            currentAlbumIndex = albumIndex;
-            currentTrackIndex = trackIndex;
             const album = albums[albumIndex];
             const track = album.tracks[trackIndex];
+            
+            if (track.youtubeId && !isYtReady) {
+                console.warn("YouTube Player not ready yet, queuing track.");
+                pendingTrack = { albumIndex, trackIndex };
+                dom.trackInfo.textContent = "Carregando Player...";
+                return;
+            }
+
+            currentAlbumIndex = albumIndex;
+            currentTrackIndex = trackIndex;
+            
             stopAllPlayers();
             updatePlayerUI(album, track);
+
             if (track.youtubeId) {
                 activePlayerType = 'youtube';
-                if (isYtReady && ytPlayer) {
-                    ytPlayer.cueVideoById({ videoId: track.youtubeId });
-                } else {
-                    console.warn("YouTube Player not ready yet, queuing track.");
-                    pendingTrack = { albumIndex, trackIndex };
-                }
+                ytPlayer.cueVideoById({ videoId: track.youtubeId });
             } else if (track.url) {
                 activePlayerType = 'audio';
                 dom.audioPlayer.src = track.url;
@@ -402,6 +415,10 @@
             dom.playIcon.style.display = isPlaying ? 'none' : 'block';
             dom.pauseIcon.style.display = isPlaying ? 'block' : 'none';
             dom.playPauseBtn.classList.toggle('playing', isPlaying);
+
+            // Clear all special effects before applying new ones
+            dom.doveElement.classList.remove('animate');
+            dom.bloodEffect.classList.remove('active');
 
             if (isPlaying) {
                 if (activePlayerType === 'audio') dom.audioPlayer.play().catch(e => console.error(e));
@@ -421,22 +438,12 @@
                 if (activePlayerType === 'audio') dom.audioPlayer.pause();
                 clearInterval(progressInterval);
                 stopVisualizer();
-                dom.doveElement.classList.remove('animate');
-                dom.bloodEffect.classList.remove('active');
             }
         }
 
         function togglePlayPause() {
             if (currentTrackIndex === -1) {
-                 if (isYtReady) {
-                    loadTrack(0, 0);
-                } else {
-                    console.warn("Player not ready to start.");
-                }
-                return;
-            }
-            if (activePlayerType === 'youtube' && (!isYtReady || !ytPlayer)) {
-                console.warn("Cannot toggle: YouTube Player not ready.");
+                loadTrack(0, 0);
                 return;
             }
             const shouldPlay = !isPlaying;
@@ -551,6 +558,7 @@
         }
 
         function initializePlayer() {
+            dom.stereoUnit.classList.add('loading');
             populateCassetteLibrary();
             initializeSmallVisualizer();
             startVisualizer(); 
