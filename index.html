@@ -122,24 +122,48 @@
             background-color: var(--ipod-bg);
             border-radius: 6px;
             text-align: center;
-            padding: 8px; /* Adjusted */
+            padding: 5px 8px; /* Adjusted */
             font-family: 'Inter', sans-serif;
             font-weight: bold;
             color: var(--screen-text);
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 5px;
+            justify-content: space-between;
             transition: background-color 0.3s;
         }
 
         .info-title {
-            font-size: 18px; /* Adjusted */
+            font-size: 16px; /* Adjusted */
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             width: 100%;
+        }
+        
+        .playback-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            font-family: 'VT323', monospace;
+            font-size: 18px;
+        }
+        
+        .playback-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .control-btn {
+            cursor: pointer;
+            font-size: 20px;
+            opacity: 0.7;
+        }
+        .control-btn:hover {
+            opacity: 1;
         }
         
         /* Sound Wave Visualizer */
@@ -275,12 +299,19 @@
 
         /* Blood Effect */
         #blood-effect { z-index: 11; }
-        .blood-overlay {
-            width: 100%; height: 100%;
-            background: radial-gradient(circle, rgba(255,0,0,0) 0%, rgba(139,0,0,0.4) 100%);
-            animation: blood-pulse 2s infinite alternate;
+        .blood-drip {
+            position: absolute;
+            width: 3px;
+            height: 20px;
+            background: linear-gradient(to bottom, darkred, rgba(139,0,0,0));
+            border-radius: 0 0 50% 50%;
+            animation: drip 3s linear forwards;
         }
-        .splatter {
+        @keyframes drip {
+            from { height: 0px; }
+            to { height: 100%; }
+        }
+        .blood-splatter {
             position: absolute;
             width: 50px; height: 50px;
             background: darkred;
@@ -305,29 +336,16 @@
         }
 
         /* Contract Effect */
-        #contract-effect {
+        #contract-watermark {
+            z-index: 1;
             display: none;
             justify-content: center;
             align-items: center;
-            background: rgba(0,0,0,0.5);
-        }
-        .contract-paper {
-            width: 80%;
-            padding: 20px;
-            background: #fdf5e6;
-            border: 2px solid #d2b48c;
-            text-align: center;
-            font-family: 'VT323', monospace;
-            color: #333;
-            box-shadow: 5px 5px 15px rgba(0,0,0,0.5);
-        }
-        .contract-paper h3 { font-size: 24px; color: darkred; }
-        .contract-paper p { font-size: 18px; margin-top: 10px; }
-        .signature {
+            opacity: 0.15;
             font-family: 'Cedarville Cursive', cursive;
-            font-size: 28px;
+            font-size: 80px;
             color: darkred;
-            margin-top: 20px;
+            transform: rotate(-25deg);
         }
 
     </style>
@@ -341,13 +359,21 @@
             </div>
             <div id="blood-effect" class="effect-container"></div>
             <div id="betting-house-effect" class="effect-container"></div>
-            <div id="contract-effect" class="effect-container"></div>
+            <div id="contract-watermark" class="effect-container">Tonykillrecords</div>
         </div>
 
         <div id="info-display" class="info-display">
             <div id="info-title" class="info-title">SPG RetroPlayer</div>
             <div id="visualizer">
                 <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+            </div>
+            <div class="playback-info">
+                <div id="time-display">0:00 / 0:00</div>
+                <div class="playback-controls">
+                    <span id="volume-down" class="control-btn">🔉</span>
+                    <span id="repeat-btn" class="control-btn">🔁</span>
+                    <span id="volume-up" class="control-btn">🔊</span>
+                </div>
             </div>
         </div>
 
@@ -391,6 +417,8 @@
         let selectedAlbumIndex = 0;
         let selectedTrackIndex = 0;
         let currentPlayingInfo = { albumIdx: -1, trackIdx: -1 };
+        let repeatMode = 0; // 0: no repeat, 1: repeat all, 2: repeat one
+        let timeInterval, bloodInterval;
 
         // --- DOM ELEMENTS ---
         const ipodBody = document.getElementById('ipod-body');
@@ -398,10 +426,12 @@
         const screen = document.getElementById('screen');
         const infoTitle = document.getElementById('info-title');
         const visualizer = document.getElementById('visualizer');
+        const timeDisplay = document.getElementById('time-display');
+        const repeatBtn = document.getElementById('repeat-btn');
         const dovesContainer = document.getElementById('peace-doves-container');
         const bloodEffectContainer = document.getElementById('blood-effect');
         const bettingEffectContainer = document.getElementById('betting-house-effect');
-        const contractEffectContainer = document.getElementById('contract-effect');
+        const contractWatermark = document.getElementById('contract-watermark');
 
         // --- ASYNC YOUTUBE API LOAD ---
         function loadYouTubeAPI() {
@@ -429,21 +459,15 @@
             const state = event.data;
             if (state === YT.PlayerState.PLAYING) {
                 visualizer.classList.add('active');
+                timeInterval = setInterval(updateTimeDisplay, 1000);
             } else {
                 visualizer.classList.remove('active');
+                clearInterval(timeInterval);
             }
             
             if (state === YT.PlayerState.ENDED) {
-                const currentAlbum = albums[currentPlayingInfo.albumIdx];
-                if (!currentAlbum) return;
-                const nextTrackIdx = currentPlayingInfo.trackIdx + 1;
-                if (nextTrackIdx < currentAlbum.tracks.length) {
-                    playTrack(currentPlayingInfo.albumIdx, nextTrackIdx);
-                } else {
-                    infoTitle.textContent = "Fim da lista";
-                    visualizer.classList.remove('active');
-                    handleThemeEffects('', '');
-                }
+                clearInterval(timeInterval);
+                handlePlaybackEnd();
             }
         }
 
@@ -522,17 +546,16 @@
 
         // --- PLAYER CONTROLS ---
         function playTrack(albumIdx, trackIdx) {
+            clearInterval(timeInterval);
+            clearInterval(bloodInterval);
+
             const album = albums[albumIdx];
             if (!album || !album.tracks) return;
             const track = album.tracks[trackIdx];
             if (!track || !player || typeof player.loadVideoById !== 'function') return;
             
             player.loadVideoById(track.videoId, 0, "large");
-            setTimeout(() => {
-                if(player && typeof player.playVideo === 'function') {
-                    player.playVideo();
-                }
-            }, 500); // Increased timeout slightly for stability
+            setTimeout(() => player.playVideo(), 500);
 
             infoTitle.textContent = track.title;
             currentPlayingInfo = { albumIdx, trackIdx };
@@ -550,29 +573,90 @@
             }
         }
         
+        function formatTime(seconds) {
+            const min = Math.floor(seconds / 60);
+            const sec = Math.floor(seconds % 60).toString().padStart(2, '0');
+            return `${min}:${sec}`;
+        }
+
+        function updateTimeDisplay() {
+            if (player && typeof player.getCurrentTime === 'function') {
+                const currentTime = player.getCurrentTime();
+                const duration = player.getDuration();
+                timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+            }
+        }
+        
+        function changeVolume(amount) {
+            if (!player || typeof player.getVolume !== 'function') return;
+            let currentVolume = player.getVolume();
+            player.setVolume(currentVolume + amount);
+        }
+
+        function toggleRepeat() {
+            repeatMode = (repeatMode + 1) % 3;
+            if (repeatMode === 0) repeatBtn.textContent = '🔁';
+            if (repeatMode === 1) repeatBtn.textContent = '🔂'; // Repeat one
+            if (repeatMode === 2) repeatBtn.textContent = '🔁¹'; // Repeat all
+        }
+        
+        function handlePlaybackEnd() {
+            const { albumIdx, trackIdx } = currentPlayingInfo;
+            if (repeatMode === 1) { // Repeat one
+                playTrack(albumIdx, trackIdx);
+                return;
+            }
+            
+            let nextAlbumIndex = albumIdx;
+            let nextTrackIndex = trackIdx + 1;
+            
+            if (nextTrackIndex >= albums[albumIdx].tracks.length) {
+                nextTrackIndex = 0;
+                nextAlbumIndex++;
+                if (nextAlbumIndex >= albums.length) {
+                    if (repeatMode === 2) { // Repeat all
+                        nextAlbumIndex = 0;
+                    } else { // No repeat
+                        infoTitle.textContent = "Fim da lista";
+                        handleThemeEffects('', '');
+                        return;
+                    }
+                }
+            }
+            playTrack(nextAlbumIndex, nextTrackIndex);
+        }
+
         // --- SPECIAL EFFECTS ---
         function handleThemeEffects(albumName, trackTitle) {
             // Reset all effects first
             dovesContainer.style.display = 'none';
             bloodEffectContainer.style.display = 'none';
             bettingEffectContainer.style.display = 'none';
-            contractEffectContainer.style.display = 'none';
+            contractWatermark.style.display = 'none';
             ipodBody.classList.remove('hyperpop-theme');
             screenContainer.classList.remove('bouncing');
+            clearInterval(bloodInterval);
 
             // Apply effects based on album or track
             const peaceAlbums = ["SPG - O SEGREDO DA FELICIDADE", "SPG - PAZ MUNDIAL (TOUR 2012)"];
             
             if (trackTitle === "ASSASSINATOS") {
-                bloodEffectContainer.innerHTML = '<div class="blood-overlay"></div><div class="splatter"></div><div class="splatter"></div>';
-                const splatters = bloodEffectContainer.querySelectorAll('.splatter');
+                bloodEffectContainer.innerHTML = '<div class="blood-splatter"></div><div class="blood-splatter"></div>';
+                const splatters = bloodEffectContainer.querySelectorAll('.blood-splatter');
                 splatters[0].style.cssText = 'top: 20%; left: 15%; transform: scale(1.2);';
                 splatters[1].style.cssText = 'top: 50%; left: 60%;';
                 bloodEffectContainer.style.display = 'block';
+                bloodInterval = setInterval(() => {
+                    const drip = document.createElement('div');
+                    drip.className = 'blood-drip';
+                    drip.style.left = `${Math.random() * 100}%`;
+                    bloodEffectContainer.appendChild(drip);
+                    setTimeout(() => drip.remove(), 3000);
+                }, 700);
             } else if (trackTitle === "JOGO DO BICHO") {
                 bettingEffectContainer.innerHTML = '';
-                const items = ['🦓', '🐅', '🐘', '🦌', '🐍', '🃏', '♠️', '♥️'];
-                for(let i = 0; i < 10; i++) {
+                const items = ['🦓', '🐅', '🐘', '🦌', '🐍', '🃏', '♠️', '♥️', '🐒', '🐖', '🐑', '🐊', '💰'];
+                for(let i = 0; i < 15; i++) {
                     const item = document.createElement('div');
                     item.className = 'bet-item';
                     item.textContent = items[Math.floor(Math.random() * items.length)];
@@ -583,8 +667,7 @@
                 }
                 bettingEffectContainer.style.display = 'block';
             } else if (albumName === "SPG IV - CONTRATO DE SANGUE") {
-                contractEffectContainer.innerHTML = '<div class="contract-paper"><h3>Contrato de Sangue</h3><p>Este som pertence a:</p><div class="signature">Tonykillrecords</div></div>';
-                contractEffectContainer.style.display = 'flex';
+                contractWatermark.style.display = 'flex';
             } else if (albumName === "SPG Hyperpop") {
                 ipodBody.classList.add('hyperpop-theme');
                 screenContainer.classList.add('bouncing');
@@ -611,6 +694,9 @@
             document.getElementById('center-btn').addEventListener('click', handleSelect);
             document.getElementById('menu-btn').addEventListener('click', handleMenu);
             document.getElementById('play-pause-btn').addEventListener('click', togglePlayPause);
+            document.getElementById('volume-up').addEventListener('click', () => changeVolume(10));
+            document.getElementById('volume-down').addEventListener('click', () => changeVolume(-10));
+            document.getElementById('repeat-btn').addEventListener('click', toggleRepeat);
         });
     </script>
 </body>
