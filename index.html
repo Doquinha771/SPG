@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>SPG MP3 Player</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,6 +24,8 @@
             margin: 0;
             padding: 0;
             user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
         }
 
         body {
@@ -34,6 +36,25 @@
             align-items: center;
             height: 100vh;
             overflow: hidden;
+        }
+
+        .app-wrapper {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #headphones {
+            position: absolute;
+            width: 400px;
+            height: auto;
+            left: -150px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-15deg);
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0.7;
         }
 
         /* --- MP3 PLAYER BODY --- */
@@ -48,6 +69,8 @@
             flex-direction: column;
             align-items: center;
             gap: 20px;
+            position: relative;
+            z-index: 2;
         }
 
         /* --- SCREEN --- */
@@ -71,28 +94,35 @@
             overflow: hidden;
             position: relative;
         }
+        .screen-view {
+            display: none;
+            height: 100%;
+        }
+        .screen-view.active {
+            display: block;
+        }
         .screen-header {
             text-align: center;
             font-weight: 700;
             margin-bottom: 5px;
             border-bottom: 2px solid var(--screen-text);
         }
-        .playlist {
+        .menu-list {
             list-style: none;
             height: calc(100% - 25px);
             overflow: hidden;
         }
-        .playlist-item {
+        .menu-item {
             padding: 2px 0;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .playlist-item.active {
+        .menu-item.active {
             background-color: var(--screen-text);
             color: var(--screen-bg);
         }
-        .playlist-item.playing::before {
+        .menu-item.playing::before {
             content: '►';
             margin-right: 5px;
         }
@@ -146,30 +176,39 @@
             color: #888;
             font-size: 0.8rem;
             font-weight: 600;
+            pointer-events: none;
         }
         .wheel-icon.menu { top: 15px; }
         .wheel-icon.next { right: 15px; }
         .wheel-icon.prev { left: 15px; }
         .wheel-icon.play-pause-wheel { bottom: 15px; }
         
-        /* --- Special Effects on Screen --- */
+        /* --- Special Effects --- */
         .screen-effect {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none;
             opacity: 0;
+            transition: opacity 0.3s;
         }
         .screen-effect.active {
             opacity: 1;
         }
 
-        #blood-glitch {
-            animation: blood-glitch-anim 0.5s steps(2, end) infinite;
+        #body-blood-effect {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('https://www.transparentpng.com/thumb/blood/blood-stain-splatter-png-pictures-3.png');
+            background-size: 150%;
+            background-position: 20% 20%;
+            background-repeat: no-repeat;
+            pointer-events: none;
+            border-radius: 40px;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
         }
-        @keyframes blood-glitch-anim {
-            0% { background: transparent; }
-            50% { background: rgba(255, 0, 0, 0.3); }
-            100% { background: transparent; }
+        #body-blood-effect.active {
+            opacity: 0.7;
         }
 
         #bicho-glitch, #dove-glitch {
@@ -187,40 +226,63 @@
         #dove-glitch .pixel-sprite { animation-duration: 8s; }
 
         #youtube-player { position: absolute; top: -9999px; left: -9999px; }
+        
+        @media (max-width: 480px) {
+            #headphones { display: none; }
+            .mp3-player {
+                width: 95vw;
+                height: 85vh;
+                max-height: 600px;
+            }
+        }
 
     </style>
 </head>
 <body>
-    <div class="mp3-player">
-        <div class="screen-container">
-            <div class="screen">
-                <div class="screen-header">SPG Player</div>
-                <ul class="playlist" id="playlist"></ul>
-
-                <!-- Effects will be here -->
-                <div id="blood-glitch" class="screen-effect"></div>
-                <div id="bicho-glitch" class="screen-effect">
-                    <span class="pixel-sprite" style="top: 20%; animation-delay: 0s;">🐘</span>
-                    <span class="pixel-sprite" style="top: 50%; animation-delay: 2s;">🐓</span>
-                    <span class="pixel-sprite" style="top: 30%; animation-delay: 5s;">🐅</span>
-                </div>
-                <div id="dove-glitch" class="screen-effect">
-                     <span class="pixel-sprite" style="top: 40%;">🕊️</span>
+    <div class="app-wrapper">
+        <img id="headphones" src="https://www.pngkey.com/png/full/9-97483_headphones-png-image-free-download-auriculares-png-sin.png" alt="Fones de ouvido">
+        <div class="mp3-player">
+            <div id="body-blood-effect"></div>
+            <div class="screen-container">
+                <div class="screen">
+                    <!-- Album View -->
+                    <div id="album-view" class="screen-view">
+                        <div class="screen-header">Álbuns</div>
+                        <ul class="menu-list" id="album-list"></ul>
+                    </div>
+                    <!-- Track View -->
+                    <div id="track-view" class="screen-view">
+                        <div class="screen-header" id="track-list-header">Músicas</div>
+                        <ul class="menu-list" id="track-list"></ul>
+                    </div>
+                    <!-- Now Playing View -->
+                    <div id="now-playing-view" class="screen-view">
+                         <div id="dove-glitch" class="screen-effect">
+                            <span class="pixel-sprite" style="top: 15%; animation-delay: 0s;">🕊️</span>
+                            <span class="pixel-sprite" style="top: 60%; animation-delay: 3s;">🕊️</span>
+                            <span class="pixel-sprite" style="top: 35%; animation-delay: 6s;">🕊️</span>
+                         </div>
+                         <div id="bicho-glitch" class="screen-effect">
+                            <span class="pixel-sprite" style="top: 20%; animation-delay: 0s;">🐘</span>
+                            <span class="pixel-sprite" style="top: 50%; animation-delay: 2s;">🐓</span>
+                            <span class="pixel-sprite" style="top: 30%; animation-delay: 5s;">🐅</span>
+                         </div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="controls-container">
-            <div id="track-info-display">
-                <div id="track-title">Bem-vindo</div>
-                <div id="track-artist">Selecione uma música</div>
-                <div id="time-display">0:00 / 0:00</div>
-            </div>
-            <div class="click-wheel" id="click-wheel">
-                <div class="wheel-icon menu">MENU</div>
-                <div class="wheel-icon next">►►</div>
-                <div class="wheel-icon prev">◄◄</div>
-                <div class="wheel-icon play-pause-wheel">►/❚❚</div>
-                <button class="center-button" id="play-pause-btn"></button>
+            <div class="controls-container">
+                <div id="track-info-display">
+                    <div id="track-title">Bem-vindo</div>
+                    <div id="track-artist">Navegue com a roda</div>
+                    <div id="time-display">0:00 / 0:00</div>
+                </div>
+                <div class="click-wheel" id="click-wheel">
+                    <div class="wheel-icon menu" id="menu-btn">MENU</div>
+                    <div class="wheel-icon next" id="next-btn-wheel">►►</div>
+                    <div class="wheel-icon prev" id="prev-btn-wheel">◄◄</div>
+                    <div class="wheel-icon play-pause-wheel">►/❚❚</div>
+                    <button class="center-button" id="play-pause-btn"></button>
+                </div>
             </div>
         </div>
     </div>
@@ -250,27 +312,29 @@
         ];
 
         const dom = {
-            playlist: document.getElementById('playlist'),
+            albumView: document.getElementById('album-view'),
+            trackView: document.getElementById('track-view'),
+            nowPlayingView: document.getElementById('now-playing-view'),
+            albumList: document.getElementById('album-list'),
+            trackList: document.getElementById('track-list'),
+            trackListHeader: document.getElementById('track-list-header'),
             trackTitle: document.getElementById('track-title'),
             trackArtist: document.getElementById('track-artist'),
             timeDisplay: document.getElementById('time-display'),
             playPauseBtn: document.getElementById('play-pause-btn'),
             clickWheel: document.getElementById('click-wheel'),
+            menuBtn: document.getElementById('menu-btn'),
+            nextBtn: document.getElementById('next-btn-wheel'),
+            prevBtn: document.getElementById('prev-btn-wheel'),
             audioPlayer: document.getElementById('audio-player'),
-            bloodGlitch: document.getElementById('blood-glitch'),
+            bodyBloodEffect: document.getElementById('body-blood-effect'),
             bichoGlitch: document.getElementById('bicho-glitch'),
             doveGlitch: document.getElementById('dove-glitch'),
         };
 
-        let ytPlayer;
-        let isYtReady = false;
-        let pendingTrack = null;
-        let allTracks = [];
-        let currentTrackIndex = -1;
-        let selectedTrackIndex = 0;
-        let isPlaying = false;
-        let activePlayerType = null;
-        let progressInterval;
+        let ytPlayer, isYtReady = false, pendingTrack = null;
+        let allTracks = [], currentTrackIndex = -1, isPlaying = false, activePlayerType = null, progressInterval;
+        let currentView = 'albums', selectedAlbumIndex = 0, selectedTrackIndex = 0;
 
         window.onYouTubeIframeAPIReady = () => {
             ytPlayer = new YT.Player('youtube-player', {
@@ -296,8 +360,14 @@
         }
 
         function flattenTracks() {
-            allTracks = albums.flatMap(album => 
-                album.tracks.map(track => ({ ...track, artist: album.artist, albumTitle: album.title }))
+            allTracks = albums.flatMap((album, albumIndex) => 
+                album.tracks.map((track, trackIndex) => ({ 
+                    ...track, 
+                    artist: album.artist, 
+                    albumTitle: album.title,
+                    albumIndex,
+                    originalTrackIndex: trackIndex
+                }))
             );
         }
 
@@ -306,16 +376,14 @@
             if (!track) return;
             
             if (track.youtubeId && !isYtReady) {
-                console.warn("YouTube Player not ready yet, queuing track.");
                 pendingTrack = trackIndex;
                 dom.trackTitle.textContent = "Carregando...";
                 return;
             }
 
             currentTrackIndex = trackIndex;
-            
             stopAllPlayers();
-            updatePlayerUI(track);
+            updatePlayerUI();
 
             if (track.youtubeId) {
                 activePlayerType = 'youtube';
@@ -330,7 +398,7 @@
             if (isPlaying === playing) return;
             isPlaying = playing;
             updateSpecialEffects(playing);
-            renderPlaylist();
+            renderScreen();
             if (playing) {
                 if (activePlayerType === 'audio') dom.audioPlayer.play().catch(e => console.error(e));
                 progressInterval = setInterval(updateProgress, 500);
@@ -341,7 +409,7 @@
         }
         
         function updateSpecialEffects(playing) {
-            dom.bloodGlitch.classList.remove('active');
+            dom.bodyBloodEffect.classList.remove('active');
             dom.bichoGlitch.classList.remove('active');
             dom.doveGlitch.classList.remove('active');
 
@@ -351,7 +419,7 @@
                     dom.doveGlitch.classList.add('active');
                 }
                 if (currentTrack.specialEffect === 'blood') {
-                    dom.bloodGlitch.classList.add('active');
+                    dom.bodyBloodEffect.classList.add('active');
                 }
                 if (currentTrack.specialEffect === 'bicho') {
                     dom.bichoGlitch.classList.add('active');
@@ -359,13 +427,24 @@
             }
         }
 
+        function handleCenterButtonClick() {
+            if (currentView === 'albums') {
+                currentView = 'tracks';
+                selectedTrackIndex = 0;
+            } else if (currentView === 'tracks') {
+                const globalIndex = allTracks.findIndex(t => t.albumIndex === selectedAlbumIndex && t.originalTrackIndex === selectedTrackIndex);
+                loadTrack(globalIndex);
+                currentView = 'playing';
+            } else if (currentView === 'playing') {
+                togglePlayPause();
+            }
+            renderScreen();
+        }
+
         function togglePlayPause() {
             if (currentTrackIndex === -1) {
-                loadTrack(selectedTrackIndex);
-                return;
-            }
-            if (currentTrackIndex !== selectedTrackIndex) {
-                loadTrack(selectedTrackIndex);
+                const globalIndex = allTracks.findIndex(t => t.albumIndex === selectedAlbumIndex && t.originalTrackIndex === selectedTrackIndex);
+                loadTrack(globalIndex);
                 return;
             }
             if (activePlayerType === 'youtube' && !isYtReady) return;
@@ -381,14 +460,16 @@
         function playNext() {
             let nextIndex = currentTrackIndex + 1;
             if (nextIndex >= allTracks.length) nextIndex = 0;
-            selectedTrackIndex = nextIndex;
+            selectedTrackIndex = allTracks[nextIndex].originalTrackIndex;
+            selectedAlbumIndex = allTracks[nextIndex].albumIndex;
             loadTrack(nextIndex);
         }
 
         function playPrev() {
             let prevIndex = currentTrackIndex - 1;
             if (prevIndex < 0) prevIndex = allTracks.length - 1;
-            selectedTrackIndex = prevIndex;
+            selectedTrackIndex = allTracks[prevIndex].originalTrackIndex;
+            selectedAlbumIndex = allTracks[prevIndex].albumIndex;
             loadTrack(prevIndex);
         }
 
@@ -399,26 +480,57 @@
             activePlayerType = null;
         }
 
-        function renderPlaylist() {
-            dom.playlist.innerHTML = '';
-            const start = Math.max(0, selectedTrackIndex - 3);
-            const end = Math.min(allTracks.length, start + 7);
+        function renderScreen() {
+            dom.albumView.classList.toggle('active', currentView === 'albums');
+            dom.trackView.classList.toggle('active', currentView === 'tracks');
+            dom.nowPlayingView.classList.toggle('active', currentView === 'playing');
 
-            for (let i = start; i < end; i++) {
-                const track = allTracks[i];
-                const item = document.createElement('li');
-                item.className = 'playlist-item';
-                item.textContent = track.title;
-                if (i === selectedTrackIndex) item.classList.add('active');
-                if (i === currentTrackIndex && isPlaying) item.classList.add('playing');
-                dom.playlist.appendChild(item);
+            if (currentView === 'albums') {
+                renderAlbumMenu();
+            } else if (currentView === 'tracks') {
+                renderTrackList();
+            } else if (currentView === 'playing') {
+                updatePlayerUI();
             }
         }
+
+        function renderAlbumMenu() {
+            dom.albumList.innerHTML = '';
+            albums.forEach((album, index) => {
+                const item = document.createElement('li');
+                item.className = 'menu-item';
+                item.textContent = album.title;
+                if (index === selectedAlbumIndex) item.classList.add('active');
+                dom.albumList.appendChild(item);
+            });
+        }
+
+        function renderTrackList() {
+            const album = albums[selectedAlbumIndex];
+            dom.trackListHeader.textContent = album.title;
+            dom.trackList.innerHTML = '';
+            album.tracks.forEach((track, index) => {
+                const item = document.createElement('li');
+                item.className = 'menu-item';
+                item.textContent = track.title;
+                if (index === selectedTrackIndex) item.classList.add('active');
+                
+                const globalIndex = allTracks.findIndex(t => t.albumIndex === selectedAlbumIndex && t.originalTrackIndex === index);
+                if (globalIndex === currentTrackIndex && isPlaying) item.classList.add('playing');
+
+                dom.trackList.appendChild(item);
+            });
+        }
         
-        function updatePlayerUI(track) {
+        function updatePlayerUI() {
+            if (currentTrackIndex === -1) {
+                dom.trackTitle.textContent = "Bem-vindo";
+                dom.trackArtist.textContent = "Navegue com a roda";
+                return;
+            }
+            const track = allTracks[currentTrackIndex];
             dom.trackTitle.textContent = track.title;
             dom.trackArtist.textContent = track.artist;
-            renderPlaylist();
         }
 
         function updateProgress() {
@@ -442,40 +554,57 @@
         
         function handleWheel(event) {
             let lastAngle = 0;
-            const center = { x: event.currentTarget.offsetLeft + 100, y: event.currentTarget.offsetTop + 100 };
+            const center = { x: event.currentTarget.getBoundingClientRect().left + 100, y: event.currentTarget.getBoundingClientRect().top + 100 };
             
-            const onMouseMove = (moveEvent) => {
-                const angle = Math.atan2(moveEvent.clientY - center.y, moveEvent.clientX - center.x);
+            const onMove = (moveEvent) => {
+                const clientX = moveEvent.touches ? moveEvent.touches[0].clientX : moveEvent.clientX;
+                const clientY = moveEvent.touches ? moveEvent.touches[0].clientY : moveEvent.clientY;
+                const angle = Math.atan2(clientY - center.y, clientX - center.x);
                 if (lastAngle !== 0) {
                     const delta = angle - lastAngle;
-                    if (Math.abs(delta) > 0.05) { // Threshold to detect change
-                         if (delta > 0 && selectedTrackIndex < allTracks.length - 1) {
-                            selectedTrackIndex++;
-                         } else if (delta < 0 && selectedTrackIndex > 0) {
-                            selectedTrackIndex--;
+                    if (Math.abs(delta) > 0.1) {
+                         if (currentView === 'albums') {
+                            if (delta > 0) selectedAlbumIndex = (selectedAlbumIndex + 1) % albums.length;
+                            else selectedAlbumIndex = (selectedAlbumIndex - 1 + albums.length) % albums.length;
+                         } else if (currentView === 'tracks') {
+                            const trackCount = albums[selectedAlbumIndex].tracks.length;
+                            if (delta > 0) selectedTrackIndex = (selectedTrackIndex + 1) % trackCount;
+                            else selectedTrackIndex = (selectedTrackIndex - 1 + trackCount) % trackCount;
                          }
-                         renderPlaylist();
+                         renderScreen();
+                         lastAngle = angle;
                     }
+                } else {
+                    lastAngle = angle;
                 }
-                lastAngle = angle;
             };
-            const onMouseUp = () => {
-                document.removeEventListener('mousemove', onMouseMove);
-                document.removeEventListener('mouseup', onMouseUp);
+            const onEnd = () => {
+                document.removeEventListener('mousemove', onMove);
+                document.removeEventListener('mouseup', onEnd);
+                document.removeEventListener('touchmove', onMove);
+                document.removeEventListener('touchend', onEnd);
             };
-            document.addEventListener('mousemove', onMouseMove);
-            document.addEventListener('mouseup', onMouseUp);
+            document.addEventListener('mousemove', onMove);
+            document.addEventListener('mouseup', onEnd);
+            document.addEventListener('touchmove', onMove);
+            document.addEventListener('touchend', onEnd);
         }
 
         function initializePlayer() {
             flattenTracks();
-            renderPlaylist();
+            renderScreen();
             
-            dom.playPauseBtn.addEventListener('click', togglePlayPause);
+            dom.playPauseBtn.addEventListener('click', handleCenterButtonClick);
             dom.clickWheel.addEventListener('mousedown', handleWheel);
-            // Quick navigation with side icons for accessibility
-            document.querySelector('.wheel-icon.next').addEventListener('click', playNext);
-            document.querySelector('.wheel-icon.prev').addEventListener('click', playPrev);
+            dom.clickWheel.addEventListener('touchstart', handleWheel);
+            
+            dom.nextBtn.addEventListener('click', playNext);
+            dom.prevBtn.addEventListener('click', playPrev);
+            dom.menuBtn.addEventListener('click', () => {
+                if (currentView === 'tracks') currentView = 'albums';
+                else if(currentView === 'playing') currentView = 'tracks';
+                renderScreen();
+            });
             
             dom.audioPlayer.addEventListener('ended', playNext);
             dom.audioPlayer.addEventListener('canplay', () => {
