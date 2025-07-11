@@ -3,21 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SPG CD Player</title>
+    <title>SPG Road Trip Player</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-main: #1a1a1a;
-            --player-bg: #0d0d0d;
-            --player-faceplate: #21232c;
-            --display-bg: #0c2438;
+            --bg-main: #101015;
+            --player-bg: rgba(20, 22, 28, 0.7);
+            --player-border: rgba(255, 255, 255, 0.1);
+            --display-bg: rgba(12, 36, 56, 0.8);
             --display-glow: #5abaff;
             --text-light: #e1e8f2;
             --text-dark: #7f8c9a;
             --accent-playing: #4CAF50;
-            --cd-sheen: linear-gradient(45deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.15) 100%);
         }
 
         * {
@@ -31,13 +30,49 @@
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-main);
             color: var(--text-light);
-            display: flex;
-            justify-content: center;
-            align-items: center;
             height: 100vh;
             overflow: hidden;
         }
+        
+        /* --- SCENERY --- */
+        .scenery-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            overflow: hidden;
+        }
+        #moving-landscape {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 200%; /* Double width for seamless loop */
+            height: 100%;
+            background-image: url('https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover;
+            background-repeat: repeat-x;
+            animation: drive 60s linear infinite;
+        }
+        @keyframes drive {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+        }
+        #car-interior {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://www.transparentpng.com/thumb/car-dashboard/3KikpT-car-dashboard-cut-out.png');
+            background-size: contain;
+            background-position: bottom center;
+            background-repeat: no-repeat;
+            z-index: 2;
+        }
 
+        /* --- MAIN APP --- */
         .app-container {
             width: 100%;
             height: 100%;
@@ -48,68 +83,25 @@
             padding: 20px;
             gap: 30px;
             position: relative;
+            z-index: 10;
         }
 
-        /* --- CD PLAYER UNIT --- */
-        .cd-player-unit {
+        /* --- CAR STEREO UNIT --- */
+        .car-stereo-unit {
             width: 100%;
-            max-width: 700px;
-            background: linear-gradient(145deg, #2e313a, #1c1e24);
+            max-width: 600px;
+            background: var(--player-bg);
+            backdrop-filter: blur(15px) saturate(180%);
+            -webkit-backdrop-filter: blur(15px) saturate(180%);
             border-radius: 12px;
             padding: 25px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.6);
-            border: 1px solid #333;
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 25px;
-            align-items: center;
-        }
-
-        /* CD Slot */
-        .cd-slot-container {
-            width: 180px;
-            height: 180px;
-            background-color: #111;
-            border-radius: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.7);
-        }
-        #cd-in-player {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            background-size: cover;
-            background-position: center;
-            background-image: url('https://placehold.co/150x150/111111/111111');
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
-            position: relative;
-        }
-        #cd-in-player.spinning {
-            animation: spin 4s linear infinite;
-        }
-        #cd-in-player::after { /* CD hole */
-            content: '';
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 30px; height: 30px;
-            background: var(--bg-main);
-            border-radius: 50%;
-            border: 2px solid #333;
-        }
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        /* Display and Controls */
-        .display-controls-wrapper {
+            border: 1px solid var(--player-border);
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
+
         .main-display {
             background-color: var(--display-bg);
             border: 2px solid #111;
@@ -153,63 +145,70 @@
         #play-pause-btn { width: 55px; height: 55px; background-color: #e1e8f2; color: #111; }
         #play-pause-btn.playing { background-color: var(--accent-playing); color: #fff; }
 
-        /* --- CD LIBRARY --- */
-        .cd-library-container {
+        /* --- CASSETTE LIBRARY --- */
+        .cassette-library-container {
             width: 100%;
             max-width: 800px;
             padding: 10px 0;
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
         }
-        .cd-library {
+        .cassette-library {
             display: flex;
             gap: 20px;
-            padding: 10px;
+            padding: 20px;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
         }
-        .cd-library::-webkit-scrollbar { height: 8px; }
-        .cd-library::-webkit-scrollbar-track { background: #111; border-radius: 4px; }
-        .cd-library::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+        .cassette-library::-webkit-scrollbar { height: 8px; }
+        .cassette-library::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px; }
+        .cassette-library::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
         
-        .cd-item {
+        .cassette-item {
             flex-shrink: 0;
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background-size: cover;
-            background-position: center;
+            width: 150px;
+            height: 90px;
+            background-color: #333;
+            border: 1px solid #555;
+            border-radius: 8px;
             cursor: pointer;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             position: relative;
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 5px;
+            background-image: linear-gradient(to top, #2a2a2a, #3d3d3d);
         }
-        .cd-item:hover { transform: scale(1.05) translateY(-5px); }
-        .cd-item::before { /* CD sheen */
-            content: '';
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%;
-            border-radius: 50%;
-            background: var(--cd-sheen);
+        .cassette-item:hover { transform: scale(1.05) translateY(-5px); }
+        .cassette-label {
+            width: 90%;
+            height: 50%;
+            background-color: #e0e0e0;
+            border: 1px solid #aaa;
+            color: #333;
+            font-size: 0.7rem;
+            text-align: center;
+            padding: 2px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
-        .cd-item.inserting {
-            position: fixed;
-            z-index: 100;
-            animation: insert-cd 0.5s ease-in-out forwards;
-        }
-        @keyframes insert-cd {
-            to {
-                width: 150px;
-                height: 150px;
-                opacity: 0;
-            }
-        }
+        .cassette-title { font-weight: 600; }
+        .cassette-artist { font-size: 0.6rem; }
         
         /* --- Special Effects & Players --- */
         #special-effect-dove {
-            position: fixed; display: none; bottom: 20%; left: -150px;
-            width: 130px; height: auto; pointer-events: none; opacity: 0; z-index: 50;
+            position: fixed; display: none; top: 10%; left: -150px;
+            width: 130px; height: auto; pointer-events: none; opacity: 0; z-index: 5;
         }
-        #special-effect-dove.animate { display: block; animation: fly-across 18s linear infinite; }
-        @keyframes fly-across {
+        #special-effect-dove.animate { display: block; animation: fly-across-sky 25s linear infinite; }
+        @keyframes fly-across-sky {
             0% { transform: translateX(0) scaleX(1); opacity: 0; }
             10% { opacity: 0.9; }
             90% { opacity: 0.9; }
@@ -219,45 +218,45 @@
 
         /* --- MOBILE OPTIMIZATION --- */
         @media (max-width: 700px) {
-            .app-container { justify-content: flex-end; padding-bottom: 20px; }
-            .cd-player-unit { grid-template-columns: 1fr; max-width: 95%; }
-            .cd-slot-container { width: 150px; height: 150px; margin: 0 auto; }
-            #cd-in-player { width: 120px; height: 120px; }
-            .cd-library-container { position: absolute; bottom: 0; left: 0; width: 100%; }
+            .app-container { justify-content: center; }
+            .car-stereo-unit { max-width: 95%; padding: 15px; gap: 15px; }
+            #track-info { font-size: 1rem; }
+            .cassette-library-container { padding: 0; }
+            .cassette-library { padding: 10px; }
+            .cassette-item { width: 120px; height: 72px; }
         }
     </style>
 </head>
 <body>
-
+    <div class="scenery-container">
+        <div id="moving-landscape"></div>
+        <div id="car-interior"></div>
+    </div>
+    
     <div class="app-container">
-        <div class="cd-player-unit">
-            <div class="cd-slot-container">
-                <div id="cd-in-player"></div>
+        <div class="car-stereo-unit">
+            <div class="main-display">
+                <div id="track-info">SPG Road Trip</div>
+                <div class="display-bottom-row">
+                    <div id="time-info">00:00 / 00:00</div>
+                    <div class="equalizer" id="equalizer"></div>
+                </div>
+                <div id="progress-bar-container">
+                    <div id="progress-bar"></div>
+                </div>
             </div>
-            <div class="display-controls-wrapper">
-                <div class="main-display">
-                    <div id="track-info">SPG RADIO</div>
-                    <div class="display-bottom-row">
-                        <div id="time-info">00:00 / 00:00</div>
-                        <div class="equalizer" id="equalizer"></div>
-                    </div>
-                    <div id="progress-bar-container">
-                        <div id="progress-bar"></div>
-                    </div>
-                </div>
-                <div class="transport-controls">
-                    <button id="prev-btn" title="Anterior"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"></path></svg></button>
-                    <button id="play-pause-btn" title="Play/Pause">
-                        <svg id="play-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
-                        <svg id="pause-icon" viewBox="0 0 24 24" fill="currentColor" style="display: none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>
-                    </button>
-                    <button id="next-btn" title="Próximo"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"></path></svg></button>
-                </div>
+            <div class="transport-controls">
+                <button id="prev-btn" title="Anterior"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"></path></svg></button>
+                <button id="play-pause-btn" title="Play/Pause">
+                    <svg id="play-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
+                    <svg id="pause-icon" viewBox="0 0 24 24" fill="currentColor" style="display: none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>
+                </button>
+                <button id="next-btn" title="Próximo"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"></path></svg></button>
             </div>
         </div>
 
-        <div class="cd-library-container">
-            <div class="cd-library" id="cd-library"></div>
+        <div class="cassette-library-container">
+            <div class="cassette-library" id="cassette-library"></div>
         </div>
     </div>
     
@@ -272,7 +271,6 @@
             {
                 artist: "SPG",
                 title: "O Segredo da Felicidade",
-                cd_art: 'https://i.ytimg.com/vi/KNXJe2RxB_o/hqdefault.jpg',
                 tracks: [
                     { title: "Jogo do Bicho", youtubeId: "KNXJe2RxB_o" },
                 ]
@@ -280,7 +278,6 @@
             {
                 artist: "Artista Exemplo",
                 title: "Exemplos de Áudio",
-                cd_art: 'https://placehold.co/150x150/FF8C00/FFFFFF?text=MP3',
                 tracks: [
                     { title: "SoundHelix Song 1", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
                     { title: "SoundHelix Song 2", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
@@ -289,8 +286,7 @@
         ];
 
         const dom = {
-            cdLibrary: document.getElementById('cd-library'),
-            cdInPlayer: document.getElementById('cd-in-player'),
+            cassetteLibrary: document.getElementById('cassette-library'),
             trackInfo: document.getElementById('track-info'),
             timeInfo: document.getElementById('time-info'),
             progressBar: document.getElementById('progress-bar'),
@@ -305,6 +301,7 @@
         };
 
         let ytPlayer;
+        let isYtReady = false;
         let currentAlbumIndex = -1;
         let currentTrackIndex = -1;
         let isPlaying = false;
@@ -312,12 +309,14 @@
         let progressInterval;
         let animationFrameId;
 
+        // This function is called by the YouTube API when it's ready
         window.onYouTubeIframeAPIReady = () => {
             ytPlayer = new YT.Player('youtube-player', {
                 height: '0', width: '0',
                 playerVars: { 'controls': 0, 'disablekb': 1 },
-                events: { 'onReady': initializePlayer, 'onStateChange': onPlayerStateChange }
+                events: { 'onStateChange': onPlayerStateChange }
             });
+            isYtReady = true;
         };
 
         function onPlayerStateChange(event) {
@@ -327,35 +326,12 @@
             if (event.data === YT.PlayerState.ENDED) playNext();
         }
 
-        function handleCdClick(albumIndex, cdElement) {
+        function handleCassetteClick(albumIndex) {
             if (currentAlbumIndex === albumIndex) {
                 togglePlayPause();
                 return;
             }
-
-            const slotRect = dom.cdInPlayer.getBoundingClientRect();
-            const cdRect = cdElement.getBoundingClientRect();
-            
-            const flyingCd = cdElement.cloneNode(true);
-            flyingCd.classList.add('inserting');
-            flyingCd.style.position = 'fixed';
-            flyingCd.style.top = `${cdRect.top}px`;
-            flyingCd.style.left = `${cdRect.left}px`;
-            flyingCd.style.width = `${cdRect.width}px`;
-            flyingCd.style.height = `${cdRect.height}px`;
-            
-            document.body.appendChild(flyingCd);
-
-            // Animate to slot
-            requestAnimationFrame(() => {
-                flyingCd.style.top = `${slotRect.top}px`;
-                flyingCd.style.left = `${slotRect.left}px`;
-            });
-            
-            setTimeout(() => {
-                loadTrack(albumIndex, 0);
-                document.body.removeChild(flyingCd);
-            }, 500);
+            loadTrack(albumIndex, 0);
         }
 
         function loadTrack(albumIndex, trackIndex) {
@@ -363,13 +339,15 @@
             currentTrackIndex = trackIndex;
             const album = albums[albumIndex];
             const track = album.tracks[trackIndex];
-
             stopAllPlayers();
             updatePlayerUI(album, track);
-
             if (track.youtubeId) {
                 activePlayerType = 'youtube';
-                ytPlayer.cueVideoById({ videoId: track.youtubeId });
+                if (isYtReady) {
+                    ytPlayer.cueVideoById({ videoId: track.youtubeId });
+                } else {
+                    console.warn("YouTube Player not ready yet.");
+                }
             } else if (track.url) {
                 activePlayerType = 'audio';
                 dom.audioPlayer.src = track.url;
@@ -382,7 +360,6 @@
             dom.playIcon.style.display = isPlaying ? 'none' : 'block';
             dom.pauseIcon.style.display = isPlaying ? 'block' : 'none';
             dom.playPauseBtn.classList.toggle('playing', isPlaying);
-            dom.cdInPlayer.classList.toggle('spinning', isPlaying);
 
             if (isPlaying) {
                 if (activePlayerType === 'audio') dom.audioPlayer.play().catch(e => console.error(e));
@@ -412,7 +389,7 @@
         function playNext() {
             let nextTrackIndex = currentTrackIndex + 1;
             if (nextTrackIndex >= albums[currentAlbumIndex].tracks.length) {
-                nextTrackIndex = 0; // Loop within album
+                nextTrackIndex = 0;
             }
             loadTrack(currentAlbumIndex, nextTrackIndex);
         }
@@ -420,7 +397,7 @@
         function playPrev() {
             let prevTrackIndex = currentTrackIndex - 1;
             if (prevTrackIndex < 0) {
-                prevTrackIndex = albums[currentAlbumIndex].tracks.length - 1; // Loop within album
+                prevTrackIndex = albums[currentAlbumIndex].tracks.length - 1;
             }
             loadTrack(currentAlbumIndex, prevTrackIndex);
         }
@@ -432,20 +409,24 @@
             activePlayerType = null;
         }
 
-        function populateCdLibrary() {
-            dom.cdLibrary.innerHTML = '';
+        function populateCassetteLibrary() {
+            dom.cassetteLibrary.innerHTML = '';
             albums.forEach((album, albumIndex) => {
-                const cdItem = document.createElement('div');
-                cdItem.className = 'cd-item';
-                cdItem.style.backgroundImage = `url(${album.cd_art})`;
-                cdItem.addEventListener('click', () => handleCdClick(albumIndex, cdItem));
-                dom.cdLibrary.appendChild(cdItem);
+                const cassetteItem = document.createElement('div');
+                cassetteItem.className = 'cassette-item';
+                cassetteItem.innerHTML = `
+                    <div class="cassette-label">
+                        <div class="cassette-title">${album.title}</div>
+                        <div class="cassette-artist">${album.artist}</div>
+                    </div>
+                `;
+                cassetteItem.addEventListener('click', () => handleCassetteClick(albumIndex));
+                dom.cassetteLibrary.appendChild(cassetteItem);
             });
         }
         
         function updatePlayerUI(album, track) {
             dom.trackInfo.textContent = `${album.artist} - ${track.title}`;
-            dom.cdInPlayer.style.backgroundImage = `url(${album.cd_art})`;
         }
 
         function updateProgress() {
@@ -458,7 +439,6 @@
                 duration = dom.audioPlayer.duration;
             }
             if (isNaN(duration) || duration === 0) return;
-
             dom.timeInfo.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
             dom.progressBar.style.width = `${(currentTime / duration) * 100}%`;
         }
@@ -469,7 +449,7 @@
             return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
         }
 
-        function initializeVisualizer() {
+        function initializeSmallVisualizer() {
             for (let i = 0; i < 12; i++) {
                 const bar = document.createElement('div');
                 bar.className = 'eq-bar';
@@ -479,7 +459,6 @@
         }
 
         function drawVisualizer() {
-            if (!isPlaying) return;
             animationFrameId = requestAnimationFrame(drawVisualizer);
             const bars = dom.equalizer.children;
             const time = Date.now() * 0.01;
@@ -502,10 +481,12 @@
             }
         }
 
+        // Main entry point for the application
         function initializePlayer() {
-            populateCdLibrary();
-            initializeVisualizer();
-            
+            populateCassetteLibrary();
+            initializeSmallVisualizer();
+            startVisualizer(); 
+
             dom.playPauseBtn.addEventListener('click', togglePlayPause);
             dom.nextBtn.addEventListener('click', playNext);
             dom.prevBtn.addEventListener('click', playPrev);
@@ -514,6 +495,9 @@
                 if (activePlayerType === 'audio') setPlayState(true);
             });
         }
+
+        // This ensures the main UI loads even if YouTube API is slow
+        document.addEventListener('DOMContentLoaded', initializePlayer);
     </script>
 </body>
 </html>
