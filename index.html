@@ -3,21 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SPG Road Trip Player</title>
+    <title>SPG MP3 Player</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-main: #101015;
-            --player-bg: rgba(20, 22, 28, 0.7);
-            --player-border: rgba(255, 255, 255, 0.1);
-            --display-bg: rgba(12, 36, 56, 0.8);
-            --display-glow: #5abaff;
-            --text-light: #e1e8f2;
-            --text-dark: #7f8c9a;
-            --accent-playing: #4CAF50;
-            --blood-color: #8a0303;
+            --bg-main: #1a1a1d;
+            --mp3-body: #e1e1e1;
+            --mp3-shadow: #c1c1c1;
+            --screen-bg: #a8b8a0;
+            --screen-border: #8c9c84;
+            --screen-text: #2c3528;
+            --wheel-color: #f0f0f0;
+            --accent-playing: #2c3528;
         }
 
         * {
@@ -30,301 +29,201 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-main);
-            color: var(--text-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
             height: 100vh;
             overflow: hidden;
         }
-        
-        /* --- SCENERY --- */
-        .scenery-container {
-            position: fixed;
-            top: 0;
-            left: 0;
+
+        /* --- MP3 PLAYER BODY --- */
+        .mp3-player {
+            width: 320px;
+            height: 550px;
+            background: linear-gradient(145deg, #f0f0f0, #c8c8c8);
+            border-radius: 40px;
+            box-shadow: 20px 20px 60px #111, -20px -20px 60px #333;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* --- SCREEN --- */
+        .screen-container {
+            width: 100%;
+            height: 180px;
+            background: #444;
+            border-radius: 10px;
+            padding: 8px;
+            box-shadow: inset 5px 5px 10px #3a3a3a, inset -5px -5px 10px #4e4e4e;
+        }
+        .screen {
             width: 100%;
             height: 100%;
-            z-index: 1;
+            background: var(--screen-bg);
+            border: 4px solid var(--screen-border);
+            border-radius: 4px;
+            padding: 10px;
+            font-family: 'Pixelify Sans', sans-serif;
+            color: var(--screen-text);
+            overflow: hidden;
+            position: relative;
+        }
+        .screen-header {
+            text-align: center;
+            font-weight: 700;
+            margin-bottom: 5px;
+            border-bottom: 2px solid var(--screen-text);
+        }
+        .playlist {
+            list-style: none;
+            height: calc(100% - 25px);
             overflow: hidden;
         }
-        #moving-landscape {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 200%; /* Double width for seamless loop */
-            height: 100%;
-            background-image: url('https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?q=80&w=2070&auto=format&fit=crop');
-            background-size: cover;
-            background-repeat: repeat-x;
-            animation: drive 60s linear infinite;
-        }
-        @keyframes drive {
-            from { transform: translateX(0); }
-            to { transform: translateX(-50%); }
-        }
-        #car-interior {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('https://www.transparentpng.com/thumb/car-dashboard/3KikpT-car-dashboard-cut-out.png');
-            background-size: contain;
-            background-position: bottom center;
-            background-repeat: no-repeat;
-            z-index: 2;
-        }
-
-        /* --- MAIN APP --- */
-        .app-container {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            gap: 30px;
-            position: relative;
-            z-index: 10;
-        }
-
-        /* --- CAR STEREO UNIT --- */
-        .car-stereo-unit {
-            width: 100%;
-            max-width: 600px;
-            background: var(--player-bg);
-            backdrop-filter: blur(15px) saturate(180%);
-            -webkit-backdrop-filter: blur(15px) saturate(180%);
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
-            border: 1px solid var(--player-border);
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            position: relative;
-            overflow: hidden; /* To contain the blood effect */
-            transition: opacity 0.3s ease;
-        }
-        .car-stereo-unit.loading {
-            opacity: 0.7;
-            pointer-events: none;
-        }
-
-        .main-display {
-            background-color: var(--display-bg);
-            border: 2px solid #111;
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
-            font-family: 'Orbitron', sans-serif;
-            color: var(--display-glow);
-            text-shadow: 0 0 8px var(--display-glow);
-        }
-        #track-info {
-            font-size: 1.3rem;
+        .playlist-item {
+            padding: 2px 0;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            margin-bottom: 10px;
         }
-        .display-bottom-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .playlist-item.active {
+            background-color: var(--screen-text);
+            color: var(--screen-bg);
         }
-        #time-info { font-size: 0.9rem; }
-        .equalizer { display: flex; align-items: flex-end; gap: 2px; height: 15px; }
-        .eq-bar { width: 4px; background-color: var(--display-glow); transition: height 0.2s ease-out; }
-        #progress-bar { width: 100%; height: 3px; background: var(--display-glow); margin-top: 5px; }
+        .playlist-item.playing::before {
+            content: '►';
+            margin-right: 5px;
+        }
 
-        .transport-controls {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 20px;
-        }
-        .transport-controls button {
-            background: #333740; border: 1px solid #111; border-radius: 50%;
-            width: 45px; height: 45px; color: var(--text-light);
-            display: flex; justify-content: center; align-items: center;
-            cursor: pointer; transition: all 0.2s ease;
-        }
-        .transport-controls button:hover { background-color: #454952; }
-        #play-pause-btn { width: 55px; height: 55px; background-color: #e1e8f2; color: #111; }
-        #play-pause-btn.playing { background-color: var(--accent-playing); color: #fff; }
-
-        /* --- CASSETTE LIBRARY --- */
-        .cassette-library-container {
+        /* --- CONTROLS --- */
+        .controls-container {
             width: 100%;
-            max-width: 800px;
-            padding: 10px 0;
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-        .cassette-library {
-            display: flex;
-            gap: 20px;
-            padding: 20px;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        .cassette-library::-webkit-scrollbar { height: 8px; }
-        .cassette-library::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px; }
-        .cassette-library::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
-        
-        .cassette-item {
-            flex-shrink: 0;
-            width: 150px;
-            height: 90px;
-            background-color: #333;
-            border: 1px solid #555;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            position: relative;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
             display: flex;
             flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        #track-info-display {
+            width: 100%;
+            text-align: center;
+            background: #ddd;
+            padding: 5px;
+            border-radius: 5px;
+            box-shadow: inset 2px 2px 4px #bbb, inset -2px -2px 4px #fff;
+        }
+        #track-title { font-weight: 700; color: #333; }
+        #track-artist { font-size: 0.8rem; color: #555; }
+        #time-display { font-size: 0.8rem; color: #555; }
+
+        .click-wheel {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #f0f0f0, #cacaca);
+            box-shadow: 10px 10px 20px #b9b9b9, -10px -10px 20px #ffffff;
+            display: flex;
             justify-content: center;
             align-items: center;
-            padding: 5px;
-            background-image: linear-gradient(to top, #2a2a2a, #3d3d3d);
+            position: relative;
+            cursor: pointer;
         }
-        .cassette-item:hover { transform: scale(1.05) translateY(-5px); }
-        .cassette-label {
-            width: 90%;
-            height: 50%;
-            background-color: #e0e0e0;
-            border: 1px solid #aaa;
-            color: #333;
-            font-size: 0.7rem;
-            text-align: center;
-            padding: 2px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+        .center-button {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #cacaca, #f0f0f0);
+            border: none;
+            box-shadow: 5px 5px 10px #b9b9b9, -5px -5px 10px #ffffff;
+            cursor: pointer;
         }
-        .cassette-title { font-weight: 600; }
-        .cassette-artist { font-size: 0.6rem; }
+        .center-button:active {
+            box-shadow: inset 5px 5px 10px #b9b9b9, inset -5px -5px 10px #ffffff;
+        }
+        .wheel-icon {
+            position: absolute;
+            color: #888;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .wheel-icon.menu { top: 15px; }
+        .wheel-icon.next { right: 15px; }
+        .wheel-icon.prev { left: 15px; }
+        .wheel-icon.play-pause-wheel { bottom: 15px; }
         
-        /* --- Special Effects & Players --- */
-        .special-effect-overlay {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+        /* --- Special Effects on Screen --- */
+        .screen-effect {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none;
-            z-index: 5;
             opacity: 0;
-            transition: opacity 0.5s ease-in-out;
         }
-        .special-effect-overlay.active {
+        .screen-effect.active {
             opacity: 1;
         }
 
-        #special-effect-dove img {
-            position: absolute;
-            left: -150px;
-            width: 130px; height: auto;
-            animation: fly-across-sky 25s linear infinite;
+        #blood-glitch {
+            animation: blood-glitch-anim 0.5s steps(2, end) infinite;
         }
-        @keyframes fly-across-sky {
-            0% { transform: translate(0, 10vh) scaleX(1); opacity: 0; }
-            10% { opacity: 0.9; }
-            90% { opacity: 0.9; }
-            100% { transform: translate(100vw, 10vh) scaleX(1); opacity: 0; }
-        }
-        
-        #blood-effect {
-            background-image: url('https://pluspng.com/img-png/blood-splatter-png-hd-blood-splatter-png-image-2000.png');
-            background-size: 150%; background-position: top center; background-repeat: no-repeat;
-            mix-blend-mode: screen;
-        }
-        #blood-effect.active {
-            opacity: 0.6;
-            animation: drip 10s ease-out forwards;
-        }
-        @keyframes drip {
-            from { transform: translateY(-100%); }
-            to { transform: translateY(0); }
+        @keyframes blood-glitch-anim {
+            0% { background: transparent; }
+            50% { background: rgba(255, 0, 0, 0.3); }
+            100% { background: transparent; }
         }
 
-        #jogo-do-bicho-effect span {
+        #bicho-glitch, #dove-glitch {
+            overflow: hidden;
+        }
+        .pixel-sprite {
             position: absolute;
-            font-size: 3rem;
-            opacity: 0;
-            animation: float-up 10s linear infinite;
-            text-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
+            font-size: 2rem;
+            animation: scroll-across 10s linear infinite;
         }
-        #jogo-do-bicho-effect span:nth-child(1) { top: 80%; left: 10%; animation-delay: 0s; }
-        #jogo-do-bicho-effect span:nth-child(2) { top: 85%; left: 30%; animation-delay: 2s; animation-duration: 8s; font-size: 4rem; }
-        #jogo-do-bicho-effect span:nth-child(3) { top: 90%; left: 50%; animation-delay: 4s; }
-        #jogo-do-bicho-effect span:nth-child(4) { top: 80%; left: 70%; animation-delay: 6s; animation-duration: 12s; font-size: 2.5rem; }
-        #jogo-do-bicho-effect span:nth-child(5) { top: 85%; left: 90%; animation-delay: 8s; }
-        #jogo-do-bicho-effect span:nth-child(6) { top: 90%; left: 20%; animation-delay: 5s; font-size: 3.5rem; }
-        #jogo-do-bicho-effect span:nth-child(7) { top: 80%; left: 60%; animation-delay: 1s; animation-duration: 7s; }
-
-        @keyframes float-up {
-            0% { transform: translateY(0); opacity: 0; }
-            10%, 90% { opacity: 0.7; }
-            100% { transform: translateY(-100vh); opacity: 0; }
+        @keyframes scroll-across {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(260px); }
         }
+        #dove-glitch .pixel-sprite { animation-duration: 8s; }
 
         #youtube-player { position: absolute; top: -9999px; left: -9999px; }
 
-        /* --- MOBILE OPTIMIZATION --- */
-        @media (max-width: 700px) {
-            .app-container { justify-content: center; }
-            .car-stereo-unit { max-width: 95%; padding: 15px; gap: 15px; }
-            #track-info { font-size: 1rem; }
-            .cassette-library-container { padding: 0; }
-            .cassette-library { padding: 10px; }
-            .cassette-item { width: 120px; height: 72px; }
-        }
     </style>
 </head>
 <body>
-    <div class="scenery-container">
-        <div id="moving-landscape"></div>
-        <div id="car-interior"></div>
-    </div>
-    
-    <div class="app-container">
-        <div class="car-stereo-unit" id="car-stereo-unit">
-            <div class="main-display">
-                <div id="track-info">SPG Road Trip</div>
-                <div class="display-bottom-row">
-                    <div id="time-info">00:00 / 00:00</div>
-                    <div class="equalizer" id="equalizer"></div>
-                </div>
-                <div id="progress-bar-container">
-                    <div id="progress-bar"></div>
-                </div>
-            </div>
-            <div class="transport-controls">
-                <button id="prev-btn" title="Anterior"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"></path></svg></button>
-                <button id="play-pause-btn" title="Play/Pause">
-                    <svg id="play-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
-                    <svg id="pause-icon" viewBox="0 0 24 24" fill="currentColor" style="display: none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>
-                </button>
-                <button id="next-btn" title="Próximo"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"></path></svg></button>
-            </div>
-        </div>
+    <div class="mp3-player">
+        <div class="screen-container">
+            <div class="screen">
+                <div class="screen-header">SPG Player</div>
+                <ul class="playlist" id="playlist"></ul>
 
-        <div class="cassette-library-container">
-            <div class="cassette-library" id="cassette-library"></div>
+                <!-- Effects will be here -->
+                <div id="blood-glitch" class="screen-effect"></div>
+                <div id="bicho-glitch" class="screen-effect">
+                    <span class="pixel-sprite" style="top: 20%; animation-delay: 0s;">🐘</span>
+                    <span class="pixel-sprite" style="top: 50%; animation-delay: 2s;">🐓</span>
+                    <span class="pixel-sprite" style="top: 30%; animation-delay: 5s;">🐅</span>
+                </div>
+                <div id="dove-glitch" class="screen-effect">
+                     <span class="pixel-sprite" style="top: 40%;">🕊️</span>
+                </div>
+            </div>
+        </div>
+        <div class="controls-container">
+            <div id="track-info-display">
+                <div id="track-title">Bem-vindo</div>
+                <div id="track-artist">Selecione uma música</div>
+                <div id="time-display">0:00 / 0:00</div>
+            </div>
+            <div class="click-wheel" id="click-wheel">
+                <div class="wheel-icon menu">MENU</div>
+                <div class="wheel-icon next">►►</div>
+                <div class="wheel-icon prev">◄◄</div>
+                <div class="wheel-icon play-pause-wheel">►/❚❚</div>
+                <button class="center-button" id="play-pause-btn"></button>
+            </div>
         </div>
     </div>
-    
-    <div id="special-effect-dove" class="special-effect-overlay">
-        <img src="https://png.pngtree.com/png-clipart/20230504/original/pngtree-white-dove-flying-isolated-on-background-png-image_9137695.png" alt="Pomba Branca">
-    </div>
-    <div id="jogo-do-bicho-effect" class="special-effect-overlay">
-        <span>🐘</span> <span>🐓</span> <span>🐅</span> <span>🐏</span> <span>🦋</span> <span>🐍</span> <span>💰</span>
-    </div>
-    <div id="blood-effect" class="special-effect-overlay"></div>
 
     <audio id="audio-player" crossorigin="anonymous"></audio>
     <div id="youtube-player"></div>
@@ -351,86 +250,72 @@
         ];
 
         const dom = {
-            stereoUnit: document.getElementById('car-stereo-unit'),
-            cassetteLibrary: document.getElementById('cassette-library'),
-            trackInfo: document.getElementById('track-info'),
-            timeInfo: document.getElementById('time-info'),
-            progressBar: document.getElementById('progress-bar'),
+            playlist: document.getElementById('playlist'),
+            trackTitle: document.getElementById('track-title'),
+            trackArtist: document.getElementById('track-artist'),
+            timeDisplay: document.getElementById('time-display'),
             playPauseBtn: document.getElementById('play-pause-btn'),
-            playIcon: document.getElementById('play-icon'),
-            pauseIcon: document.getElementById('pause-icon'),
-            nextBtn: document.getElementById('next-btn'),
-            prevBtn: document.getElementById('prev-btn'),
+            clickWheel: document.getElementById('click-wheel'),
             audioPlayer: document.getElementById('audio-player'),
-            equalizer: document.getElementById('equalizer'),
-            doveElement: document.getElementById('special-effect-dove'),
-            bloodEffect: document.getElementById('blood-effect'),
-            jogoDoBichoEffect: document.getElementById('jogo-do-bicho-effect'),
+            bloodGlitch: document.getElementById('blood-glitch'),
+            bichoGlitch: document.getElementById('bicho-glitch'),
+            doveGlitch: document.getElementById('dove-glitch'),
         };
 
         let ytPlayer;
         let isYtReady = false;
         let pendingTrack = null;
-        let currentAlbumIndex = -1;
+        let allTracks = [];
         let currentTrackIndex = -1;
+        let selectedTrackIndex = 0;
         let isPlaying = false;
         let activePlayerType = null;
         let progressInterval;
-        let animationFrameId;
 
         window.onYouTubeIframeAPIReady = () => {
             ytPlayer = new YT.Player('youtube-player', {
                 height: '0', width: '0',
                 playerVars: { 'controls': 0, 'disablekb': 1, 'playsinline': 1 },
-                events: { 
-                    'onReady': onPlayerReady,
-                    'onStateChange': onPlayerStateChange 
-                }
+                events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange }
             });
         };
         
-        function onPlayerReady(event) {
+        function onPlayerReady() {
             isYtReady = true;
-            dom.stereoUnit.classList.remove('loading');
             if (pendingTrack) {
-                loadTrack(pendingTrack.albumIndex, pendingTrack.trackIndex);
+                loadTrack(pendingTrack);
                 pendingTrack = null;
             }
         }
 
         function onPlayerStateChange(event) {
-            if (event.data === YT.PlayerState.CUED) {
-                event.target.playVideo();
-            }
+            if (event.data === YT.PlayerState.CUED) event.target.playVideo();
             if (event.data === YT.PlayerState.PLAYING) setPlayState(true);
             else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) setPlayState(false);
             if (event.data === YT.PlayerState.ENDED) playNext();
         }
 
-        function handleCassetteClick(albumIndex) {
-            if (currentAlbumIndex === albumIndex) {
-                togglePlayPause();
-                return;
-            }
-            loadTrack(albumIndex, 0);
+        function flattenTracks() {
+            allTracks = albums.flatMap(album => 
+                album.tracks.map(track => ({ ...track, artist: album.artist, albumTitle: album.title }))
+            );
         }
 
-        function loadTrack(albumIndex, trackIndex) {
-            const album = albums[albumIndex];
-            const track = album.tracks[trackIndex];
+        function loadTrack(trackIndex) {
+            const track = allTracks[trackIndex];
+            if (!track) return;
             
             if (track.youtubeId && !isYtReady) {
                 console.warn("YouTube Player not ready yet, queuing track.");
-                pendingTrack = { albumIndex, trackIndex };
-                dom.trackInfo.textContent = "Carregando Player...";
+                pendingTrack = trackIndex;
+                dom.trackTitle.textContent = "Carregando...";
                 return;
             }
 
-            currentAlbumIndex = albumIndex;
             currentTrackIndex = trackIndex;
             
             stopAllPlayers();
-            updatePlayerUI(album, track);
+            updatePlayerUI(track);
 
             if (track.youtubeId) {
                 activePlayerType = 'youtube';
@@ -444,57 +329,47 @@
         function setPlayState(playing) {
             if (isPlaying === playing) return;
             isPlaying = playing;
-            dom.playIcon.style.display = isPlaying ? 'none' : 'block';
-            dom.pauseIcon.style.display = isPlaying ? 'block' : 'none';
-            dom.playPauseBtn.classList.toggle('playing', isPlaying);
-
             updateSpecialEffects(playing);
-
+            renderPlaylist();
             if (playing) {
                 if (activePlayerType === 'audio') dom.audioPlayer.play().catch(e => console.error(e));
                 progressInterval = setInterval(updateProgress, 500);
-                startVisualizer();
             } else {
                 if (activePlayerType === 'audio') dom.audioPlayer.pause();
                 clearInterval(progressInterval);
-                stopVisualizer();
             }
         }
-
+        
         function updateSpecialEffects(playing) {
-            // Reset all effects first
-            dom.doveElement.classList.remove('active');
-            dom.bloodEffect.classList.remove('active');
-            dom.jogoDoBichoEffect.classList.remove('active');
+            dom.bloodGlitch.classList.remove('active');
+            dom.bichoGlitch.classList.remove('active');
+            dom.doveGlitch.classList.remove('active');
 
-            if (playing && currentAlbumIndex > -1) {
-                const currentAlbum = albums[currentAlbumIndex];
-                const currentTrack = currentAlbum.tracks[currentTrackIndex];
-
-                // Album-specific effect
-                if (currentAlbum.title === 'O Segredo da Felicidade') {
-                    dom.doveElement.classList.add('active');
+            if (playing && currentTrackIndex > -1) {
+                const currentTrack = allTracks[currentTrackIndex];
+                if (currentTrack.albumTitle === 'O Segredo da Felicidade') {
+                    dom.doveGlitch.classList.add('active');
                 }
-
-                // Track-specific effect
                 if (currentTrack.specialEffect === 'blood') {
-                    dom.bloodEffect.classList.add('active');
+                    dom.bloodGlitch.classList.add('active');
                 }
                 if (currentTrack.specialEffect === 'bicho') {
-                    dom.jogoDoBichoEffect.classList.add('active');
+                    dom.bichoGlitch.classList.add('active');
                 }
             }
         }
 
         function togglePlayPause() {
             if (currentTrackIndex === -1) {
-                loadTrack(0, 0);
+                loadTrack(selectedTrackIndex);
                 return;
             }
-            if (activePlayerType === 'youtube' && !isYtReady) {
-                console.warn("Cannot toggle: YouTube Player not ready.");
+            if (currentTrackIndex !== selectedTrackIndex) {
+                loadTrack(selectedTrackIndex);
                 return;
             }
+            if (activePlayerType === 'youtube' && !isYtReady) return;
+            
             const shouldPlay = !isPlaying;
             if (activePlayerType === 'youtube') {
                 shouldPlay ? ytPlayer.playVideo() : ytPlayer.pauseVideo();
@@ -504,27 +379,17 @@
         }
         
         function playNext() {
-            if (currentAlbumIndex === -1) {
-                loadTrack(0, 0);
-                return;
-            }
-            let nextTrackIndex = currentTrackIndex + 1;
-            if (nextTrackIndex >= albums[currentAlbumIndex].tracks.length) {
-                nextTrackIndex = 0;
-            }
-            loadTrack(currentAlbumIndex, nextTrackIndex);
+            let nextIndex = currentTrackIndex + 1;
+            if (nextIndex >= allTracks.length) nextIndex = 0;
+            selectedTrackIndex = nextIndex;
+            loadTrack(nextIndex);
         }
 
         function playPrev() {
-            if (currentAlbumIndex === -1) {
-                loadTrack(0, 0);
-                return;
-            }
-            let prevTrackIndex = currentTrackIndex - 1;
-            if (prevTrackIndex < 0) {
-                prevTrackIndex = albums[currentAlbumIndex].tracks.length - 1;
-            }
-            loadTrack(currentAlbumIndex, prevTrackIndex);
+            let prevIndex = currentTrackIndex - 1;
+            if (prevIndex < 0) prevIndex = allTracks.length - 1;
+            selectedTrackIndex = prevIndex;
+            loadTrack(prevIndex);
         }
 
         function stopAllPlayers() {
@@ -534,24 +399,26 @@
             activePlayerType = null;
         }
 
-        function populateCassetteLibrary() {
-            dom.cassetteLibrary.innerHTML = '';
-            albums.forEach((album, albumIndex) => {
-                const cassetteItem = document.createElement('div');
-                cassetteItem.className = 'cassette-item';
-                cassetteItem.innerHTML = `
-                    <div class="cassette-label">
-                        <div class="cassette-title">${album.title}</div>
-                        <div class="cassette-artist">${album.artist}</div>
-                    </div>
-                `;
-                cassetteItem.addEventListener('click', () => handleCassetteClick(albumIndex));
-                dom.cassetteLibrary.appendChild(cassetteItem);
-            });
+        function renderPlaylist() {
+            dom.playlist.innerHTML = '';
+            const start = Math.max(0, selectedTrackIndex - 3);
+            const end = Math.min(allTracks.length, start + 7);
+
+            for (let i = start; i < end; i++) {
+                const track = allTracks[i];
+                const item = document.createElement('li');
+                item.className = 'playlist-item';
+                item.textContent = track.title;
+                if (i === selectedTrackIndex) item.classList.add('active');
+                if (i === currentTrackIndex && isPlaying) item.classList.add('playing');
+                dom.playlist.appendChild(item);
+            }
         }
         
-        function updatePlayerUI(album, track) {
-            dom.trackInfo.textContent = `${album.artist} - ${track.title}`;
+        function updatePlayerUI(track) {
+            dom.trackTitle.textContent = track.title;
+            dom.trackArtist.textContent = track.artist;
+            renderPlaylist();
         }
 
         function updateProgress() {
@@ -564,8 +431,7 @@
                 duration = dom.audioPlayer.duration;
             }
             if (isNaN(duration) || duration === 0) return;
-            dom.timeInfo.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
-            dom.progressBar.style.width = `${(currentTime / duration) * 100}%`;
+            dom.timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
         }
         
         function formatTime(seconds) {
@@ -573,48 +439,44 @@
             const sec = Math.floor(seconds % 60);
             return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
         }
-
-        function initializeSmallVisualizer() {
-            for (let i = 0; i < 12; i++) {
-                const bar = document.createElement('div');
-                bar.className = 'eq-bar';
-                bar.style.height = '2px';
-                dom.equalizer.appendChild(bar);
-            }
-        }
-
-        function drawVisualizer() {
-            animationFrameId = requestAnimationFrame(drawVisualizer);
-            const bars = dom.equalizer.children;
-            const time = Date.now() * 0.01;
-            for (let i = 0; i < bars.length; i++) {
-                const height = (Math.sin(time + i * 0.8) * 0.5 + 0.5) * 13 + 2;
-                bars[i].style.height = `${height}px`;
-            }
-        }
         
-        function startVisualizer() {
-            if (!animationFrameId) drawVisualizer();
-        }
-        
-        function stopVisualizer() {
-            cancelAnimationFrame(animationFrameId);
-            animationFrameId = null;
-            const bars = dom.equalizer.children;
-            for (let i = 0; i < bars.length; i++) {
-                bars[i].style.height = '2px';
-            }
+        function handleWheel(event) {
+            let lastAngle = 0;
+            const center = { x: event.currentTarget.offsetLeft + 100, y: event.currentTarget.offsetTop + 100 };
+            
+            const onMouseMove = (moveEvent) => {
+                const angle = Math.atan2(moveEvent.clientY - center.y, moveEvent.clientX - center.x);
+                if (lastAngle !== 0) {
+                    const delta = angle - lastAngle;
+                    if (Math.abs(delta) > 0.05) { // Threshold to detect change
+                         if (delta > 0 && selectedTrackIndex < allTracks.length - 1) {
+                            selectedTrackIndex++;
+                         } else if (delta < 0 && selectedTrackIndex > 0) {
+                            selectedTrackIndex--;
+                         }
+                         renderPlaylist();
+                    }
+                }
+                lastAngle = angle;
+            };
+            const onMouseUp = () => {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            };
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
         }
 
         function initializePlayer() {
-            dom.stereoUnit.classList.add('loading');
-            populateCassetteLibrary();
-            initializeSmallVisualizer();
-            startVisualizer(); 
-
+            flattenTracks();
+            renderPlaylist();
+            
             dom.playPauseBtn.addEventListener('click', togglePlayPause);
-            dom.nextBtn.addEventListener('click', playNext);
-            dom.prevBtn.addEventListener('click', playPrev);
+            dom.clickWheel.addEventListener('mousedown', handleWheel);
+            // Quick navigation with side icons for accessibility
+            document.querySelector('.wheel-icon.next').addEventListener('click', playNext);
+            document.querySelector('.wheel-icon.prev').addEventListener('click', playPrev);
+            
             dom.audioPlayer.addEventListener('ended', playNext);
             dom.audioPlayer.addEventListener('canplay', () => {
                 if (activePlayerType === 'audio') setPlayState(true);
