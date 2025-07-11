@@ -343,7 +343,7 @@
             updatePlayerUI(album, track);
             if (track.youtubeId) {
                 activePlayerType = 'youtube';
-                if (isYtReady) {
+                if (isYtReady && ytPlayer) {
                     ytPlayer.cueVideoById({ videoId: track.youtubeId });
                 } else {
                     console.warn("YouTube Player not ready yet.");
@@ -378,6 +378,11 @@
 
         function togglePlayPause() {
             if (currentTrackIndex === -1) return;
+            // FIX: Add guard clause to ensure ytPlayer is ready before use
+            if (activePlayerType === 'youtube' && (!isYtReady || !ytPlayer)) {
+                console.warn("Cannot toggle: YouTube Player not ready.");
+                return;
+            }
             const shouldPlay = !isPlaying;
             if (activePlayerType === 'youtube') {
                 shouldPlay ? ytPlayer.playVideo() : ytPlayer.pauseVideo();
