@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SPG Player - Estilo FL Studio</title>
+    <title>SPG Player</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-darkest: #1A1C20;
-            --bg-dark: #252830;
-            --bg-medium: #333740;
-            --bg-light: #454952;
-            --text-light: #E0E0E0;
+            --bg-player: #0D0D0D;
+            --bg-playlist: #1A1A1A;
+            --bg-playlist-hover: #2C2C2C;
+            --text-light: #FFFFFF;
             --text-medium: #A0A0A0;
-            --accent-orange: #FF8C00;
-            --accent-green: #4CAF50;
-            --accent-green-dark: #388E3C;
-            --border-color: #3A3E47;
+            --text-dark: #666666;
+            --accent-primary: #FFFFFF;
+            --accent-secondary: #FF8C00;
+            --accent-playing: #4CAF50;
+            --border-color: #2A2A2A;
         }
 
         * {
@@ -29,7 +29,7 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg-darkest);
+            background-color: #000;
             color: var(--text-light);
             display: flex;
             justify-content: center;
@@ -38,172 +38,49 @@
             overflow: hidden;
         }
 
-        .fl-studio-container {
+        .player-container {
             width: 100%;
             height: 100%;
-            max-width: 1300px;
-            max-height: 800px;
-            background-color: var(--bg-dark);
+            max-width: 1400px;
+            max-height: 850px;
+            background-color: var(--bg-player);
             border-radius: 12px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
             display: flex;
             overflow: hidden;
         }
 
-        /* --- PAINEL ESQUERDO (LISTA DE ÁLBUNS) --- */
-        .album-panel {
-            width: 320px;
-            background-color: var(--bg-darkest);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            border-right: 1px solid var(--border-color);
-        }
-
-        .album-panel-header {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--accent-orange);
-            margin-bottom: 20px;
-        }
-        .album-panel-header span {
-            color: var(--text-light);
-            font-weight: 400;
-        }
-
-        .album-list {
-            list-style: none;
-            overflow-y: auto;
-            flex-grow: 1;
-        }
-        
-        .album-list::-webkit-scrollbar { width: 6px; }
-        .album-list::-webkit-scrollbar-track { background: var(--bg-darkest); }
-        .album-list::-webkit-scrollbar-thumb { background-color: var(--bg-light); border-radius: 3px; }
-
-        .album-item {
-            margin-bottom: 10px;
-        }
-
-        .album-header {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-        }
-        .album-header:hover, .album-item.active .album-header {
-            background-color: var(--bg-medium);
-        }
-
-        .album-cover-small {
-            width: 50px;
-            height: 50px;
-            border-radius: 6px;
-            margin-right: 15px;
-            object-fit: cover;
-        }
-
-        .album-info .album-title {
-            font-weight: 600;
-            display: block;
-        }
-        .album-info .album-artist {
-            font-size: 0.85rem;
-            color: var(--text-medium);
-        }
-
-        .track-list {
-            list-style: none;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.4s ease-in-out;
-        }
-        .album-item.active .track-list {
-            max-height: 500px; /* Adjust as needed */
-        }
-
-        .track-item {
-            padding: 12px 10px 12px 75px; /* Indent tracks */
-            cursor: pointer;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            color: var(--text-medium);
-            transition: all 0.2s ease;
-            position: relative;
-        }
-        .track-item:hover {
-            background-color: var(--bg-medium);
-            color: var(--text-light);
-        }
-        .track-item.playing {
-            color: var(--accent-green);
-            font-weight: 600;
-        }
-        .track-item.playing::before {
-            content: '▶';
-            position: absolute;
-            left: 55px;
-            font-size: 0.7rem;
-            color: var(--accent-green);
-        }
-
-
-        /* --- PAINEL DIREITO (PLAYER PRINCIPAL) --- */
+        /* --- PAINEL DO PLAYER (ESQUERDA) --- */
         .player-panel {
             flex-grow: 1;
-            padding: 30px;
+            padding: 50px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             position: relative;
-            overflow: hidden;
-        }
-        
-        #album-art-bg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            filter: blur(30px) brightness(0.4);
-            transform: scale(1.2);
-            transition: background-image 0.5s ease-in-out;
-            z-index: 1;
         }
         
         .player-content {
-            z-index: 2;
             display: flex;
             flex-direction: column;
             align-items: center;
+            text-align: center;
             width: 100%;
-            max-width: 450px;
+            max-width: 500px;
         }
-
-        #album-art-main {
-            width: 100%;
-            max-width: 400px;
-            aspect-ratio: 1 / 1;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-            margin-bottom: 30px;
-            object-fit: cover;
+        
+        #current-track-artist {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: var(--text-medium);
+            margin-bottom: 8px;
         }
         
         #current-track-title {
-            font-size: 1.8rem;
+            font-size: 2.5rem;
             font-weight: 700;
-            text-align: center;
-        }
-        #current-track-artist {
-            font-size: 1.1rem;
-            color: var(--text-medium);
-            margin-bottom: 20px;
-            text-align: center;
+            margin-bottom: 40px;
         }
 
         .progress-container {
@@ -214,17 +91,21 @@
             -webkit-appearance: none;
             appearance: none;
             width: 100%;
-            height: 6px;
-            background: var(--bg-light);
+            height: 4px;
+            background: var(--text-dark);
             outline: none;
-            border-radius: 3px;
+            border-radius: 2px;
             cursor: pointer;
+            transition: height 0.2s ease;
+        }
+        #progress-bar:hover {
+            height: 8px;
         }
         #progress-bar::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
             background: var(--text-light);
             border-radius: 50%;
             cursor: pointer;
@@ -235,26 +116,28 @@
             font-size: 0.8rem;
             color: var(--text-medium);
             width: 100%;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
         
         .transport-controls {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 30px;
         }
         .transport-controls button {
             background: transparent;
             border: none;
-            color: var(--text-light);
+            color: var(--text-medium);
             cursor: pointer;
-            transition: transform 0.2s ease;
+            transition: all 0.2s ease;
         }
         .transport-controls button:hover {
             transform: scale(1.1);
+            color: var(--text-light);
         }
         #play-pause-btn {
-            background-color: var(--accent-orange);
+            background-color: var(--accent-primary);
+            color: #000;
             width: 60px;
             height: 60px;
             border-radius: 50%;
@@ -262,8 +145,11 @@
             justify-content: center;
             align-items: center;
         }
-        #play-pause-btn svg { width: 30px; height: 30px; }
-        .transport-controls .side-btn svg { width: 24px; height: 24px; }
+        #play-pause-btn:hover {
+            color: #000;
+        }
+        #play-pause-btn svg { width: 28px; height: 28px; }
+        .transport-controls .side-btn svg { width: 22px; height: 22px; }
         
         #special-effect-dove {
             position: absolute;
@@ -286,56 +172,136 @@
             90% { opacity: 0.9; }
             100% { transform: translateX(0) scaleX(-1); opacity: 0; }
         }
+
+        /* --- PAINEL DA PLAYLIST (DIREITA) --- */
+        .playlist-panel {
+            width: 400px;
+            background-color: var(--bg-playlist);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid var(--border-color);
+        }
+
+        .playlist-panel-header {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-light);
+            margin-bottom: 20px;
+            padding-left: 10px;
+        }
+
+        .album-list {
+            list-style: none;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+        
+        .album-list::-webkit-scrollbar { width: 6px; }
+        .album-list::-webkit-scrollbar-track { background: var(--bg-playlist); }
+        .album-list::-webkit-scrollbar-thumb { background-color: #444; border-radius: 3px; }
+
+        .album-item {
+            margin-bottom: 20px;
+        }
+
+        .album-header {
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .album-info .album-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: block;
+        }
+        .album-info .album-artist {
+            font-size: 0.9rem;
+            color: var(--text-medium);
+        }
+
+        .track-list {
+            list-style: none;
+            margin-top: 10px;
+        }
+
+        .track-item {
+            padding: 14px 10px;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            color: var(--text-medium);
+            transition: all 0.2s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .track-item:hover {
+            background-color: var(--bg-playlist-hover);
+            color: var(--text-light);
+        }
+        .track-item.playing {
+            color: var(--accent-playing);
+            font-weight: 600;
+            background-color: var(--bg-playlist-hover);
+        }
+        .track-item .track-number {
+            width: 20px;
+            margin-right: 15px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        .track-item.playing .track-number {
+            content: '';
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%234CAF50' viewBox='0 0 256 256'%3E%3Cpath d='M240,128a15.77,15.77,0,0,1-8.26,14L80.3,227.11A16,16,0,0,1,56,213.11V42.89a16,16,0,0,1,24.3-13.92L231.74,114A15.77,15.77,0,0,1,240,128Z'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            font-size: 0; /* Hide number when playing */
+        }
         
         #youtube-player { position: absolute; top: -9999px; left: -9999px; }
 
         /* --- MOBILE OPTIMIZATION --- */
-        @media (max-width: 768px) {
+        @media (max-width: 800px) {
             body { height: auto; min-height: 100vh; }
-            .fl-studio-container { flex-direction: column; height: 100vh; max-height: none; border-radius: 0; }
+            .player-container { flex-direction: column; height: 100vh; max-height: none; border-radius: 0; }
             
-            .album-panel {
-                width: 100%;
-                height: 45%;
-                border-right: none;
-                border-bottom: 1px solid var(--border-color);
-                padding: 15px;
-            }
-            .album-panel-header { font-size: 1.2rem; margin-bottom: 15px; }
-
             .player-panel {
-                height: 55%;
+                flex-grow: 0;
+                height: 45vh;
                 padding: 20px;
-                justify-content: flex-end;
+                justify-content: center;
             }
             .player-content { max-width: 100%; }
-            #album-art-main { margin-bottom: 20px; max-width: 200px; }
-            #current-track-title { font-size: 1.2rem; }
-            #current-track-artist { font-size: 0.9rem; margin-bottom: 15px; }
+            #current-track-title { font-size: 1.5rem; margin-bottom: 20px; }
+            #current-track-artist { font-size: 1rem; }
             .progress-container { margin-bottom: 5px; }
-            .time-display-container { margin-bottom: 10px; }
-            #play-pause-btn { width: 50px; height: 50px; }
-            #play-pause-btn svg { width: 25px; height: 25px; }
+            .time-display-container { margin-bottom: 15px; }
+            #play-pause-btn { width: 55px; height: 55px; }
+            #play-pause-btn svg { width: 26px; height: 26px; }
             .transport-controls .side-btn svg { width: 20px; height: 20px; }
+
+            .playlist-panel {
+                width: 100%;
+                height: 55vh;
+                border-left: none;
+                border-top: 1px solid var(--border-color);
+                padding: 15px;
+            }
+            .playlist-panel-header { font-size: 1.2rem; margin-bottom: 15px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="fl-studio-container">
-        <!-- PAINEL DE ÁLBUNS -->
-        <aside class="album-panel">
-            <header class="album-panel-header">SPG<span>PLAYER</span></header>
-            <ul class="album-list" id="album-list"></ul>
-        </aside>
-
+    <div class="player-container">
         <!-- PAINEL DO PLAYER -->
         <main class="player-panel">
-            <div id="album-art-bg"></div>
             <div class="player-content">
-                <img id="album-art-main" src="https://placehold.co/400x400/2A2D35/E0E0E0?text=SPG" alt="Capa do Álbum">
+                <p id="current-track-artist">SPG</p>
                 <h2 id="current-track-title">Bem-vindo</h2>
-                <p id="current-track-artist">Selecione um álbum para começar</p>
                 
                 <div class="progress-container">
                     <input type="range" id="progress-bar" value="0" step="1">
@@ -347,19 +313,25 @@
 
                 <div class="transport-controls">
                     <button id="prev-btn" class="side-btn" title="Anterior">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 19 2 12 11 5 11 19"></polygon><polygon points="22 19 13 12 22 5 22 19"></polygon></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 20.5v-17l-12 8.5 12 8.5zM5 20.5v-17h2v17H5z"/></svg>
                     </button>
                     <button id="play-pause-btn" title="Play/Pause">
                         <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
                         <svg id="pause-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="display: none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>
                     </button>
                     <button id="next-btn" class="side-btn" title="Próximo">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 19 22 12 13 5 13 19"></polygon><polygon points="2 19 11 12 2 5 2 19"></polygon></svg>
+                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M5 4.5v17l12-8.5L5 4.5zM19 4.5v17h-2v-17h2z"/></svg>
                     </button>
                 </div>
             </div>
             <img id="special-effect-dove" src="https://png.pngtree.com/png-clipart/20230504/original/pngtree-white-dove-flying-isolated-on-background-png-image_9137695.png" alt="Animação de Pomba Branca">
         </main>
+        
+        <!-- PAINEL DE PLAYLIST -->
+        <aside class="playlist-panel">
+            <header class="playlist-panel-header">Álbuns</header>
+            <ul class="album-list" id="album-list"></ul>
+        </aside>
     </div>
 
     <audio id="audio-player" crossorigin="anonymous"></audio>
@@ -375,7 +347,6 @@
                 {
                     artist: "SPG",
                     title: "O Segredo da Felicidade",
-                    cover: "https://i.ytimg.com/vi/KNXJe2RxB_o/hqdefault.jpg",
                     tracks: [
                         { title: "Jogo do Bicho", youtubeId: "KNXJe2RxB_o", specialEffect: 'dove' },
                         // Adicione outras músicas deste álbum aqui
@@ -384,7 +355,6 @@
                 {
                     artist: "Artista Exemplo",
                     title: "Exemplos de Áudio",
-                    cover: "https://placehold.co/400x400/FF8C00/FFFFFF?text=MP3",
                     tracks: [
                         { title: "SoundHelix Song 1", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
                         { title: "SoundHelix Song 2", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
@@ -395,8 +365,6 @@
             // --- Seleção de Elementos do DOM ---
             const dom = {
                 albumList: document.getElementById('album-list'),
-                albumArtMain: document.getElementById('album-art-main'),
-                albumArtBg: document.getElementById('album-art-bg'),
                 currentTrackTitle: document.getElementById('current-track-title'),
                 currentTrackArtist: document.getElementById('current-track-artist'),
                 progressBar: document.getElementById('progress-bar'),
@@ -416,7 +384,7 @@
             let currentAlbumIndex = -1;
             let currentTrackIndex = -1;
             let isPlaying = false;
-            let activePlayerType = null; // 'audio' ou 'youtube'
+            let activePlayerType = null;
             let progressInterval;
 
             // --- Configuração do Player do YouTube ---
@@ -435,7 +403,10 @@
 
             // --- Funções de Controle Geral ---
             function loadTrack(albumIndex, trackIndex) {
-                if (albumIndex === currentAlbumIndex && trackIndex === currentTrackIndex) return;
+                if (albumIndex === currentAlbumIndex && trackIndex === currentTrackIndex) {
+                    togglePlayPause(); // Se clicar na mesma música, apenas toca/pausa
+                    return;
+                }
 
                 currentAlbumIndex = albumIndex;
                 currentTrackIndex = trackIndex;
@@ -527,7 +498,6 @@
                     albumItem.dataset.albumIndex = albumIndex;
                     albumItem.innerHTML = `
                         <div class="album-header">
-                            <img src="${album.cover}" alt="${album.title}" class="album-cover-small">
                             <div class="album-info">
                                 <span class="album-title">${album.title}</span>
                                 <span class="album-artist">${album.artist}</span>
@@ -535,7 +505,10 @@
                         </div>
                         <ul class="track-list">
                             ${album.tracks.map((track, trackIndex) => `
-                                <li class="track-item" data-track-index="${trackIndex}">${track.title}</li>
+                                <li class="track-item" data-track-index="${trackIndex}">
+                                    <span class="track-number">${trackIndex + 1}</span>
+                                    <span class="track-title">${track.title}</span>
+                                </li>
                             `).join('')}
                         </ul>
                     `;
@@ -544,13 +517,8 @@
             }
             
             function updatePlayerUI(album, track) {
-                dom.albumArtMain.src = album.cover;
-                dom.albumArtBg.style.backgroundImage = `url(${album.cover})`;
                 dom.currentTrackTitle.textContent = track.title;
                 dom.currentTrackArtist.textContent = album.artist;
-
-                document.querySelectorAll('.album-item.active').forEach(el => el.classList.remove('active'));
-                document.querySelector(`.album-item[data-album-index='${currentAlbumIndex}']`).classList.add('active');
                 
                 document.querySelectorAll('.track-item.playing').forEach(el => el.classList.remove('playing'));
                 document.querySelector(`.album-item[data-album-index='${currentAlbumIndex}'] .track-item[data-track-index='${currentTrackIndex}']`).classList.add('playing');
@@ -575,9 +543,11 @@
             
             function seek(event) {
                 const seekTime = event.target.value;
-                if (activePlayerType === 'youtube') ytPlayer.seekTo(seekTime, true);
-                else dom.audioPlayer.currentTime = seekTime;
-                updateProgress();
+                if (!isNaN(seekTime)) {
+                   if (activePlayerType === 'youtube') ytPlayer.seekTo(seekTime, true);
+                   else dom.audioPlayer.currentTime = seekTime;
+                   updateProgress();
+                }
             }
 
             function formatTime(seconds) {
@@ -601,15 +571,12 @@
                 });
 
                 dom.albumList.addEventListener('click', (e) => {
-                    const albumItem = e.target.closest('.album-item');
                     const trackItem = e.target.closest('.track-item');
-
                     if (trackItem) {
+                        const albumItem = trackItem.closest('.album-item');
                         const albumIndex = parseInt(albumItem.dataset.albumIndex);
                         const trackIndex = parseInt(trackItem.dataset.trackIndex);
                         loadTrack(albumIndex, trackIndex);
-                    } else if (albumItem) {
-                        albumItem.classList.toggle('active');
                     }
                 });
             }
