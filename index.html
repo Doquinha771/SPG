@@ -302,6 +302,7 @@
 
         let ytPlayer;
         let isYtReady = false;
+        let pendingTrack = null; // Holds track info if clicked before YT is ready
         let currentAlbumIndex = -1;
         let currentTrackIndex = -1;
         let isPlaying = false;
@@ -314,10 +315,21 @@
             ytPlayer = new YT.Player('youtube-player', {
                 height: '0', width: '0',
                 playerVars: { 'controls': 0, 'disablekb': 1 },
-                events: { 'onStateChange': onPlayerStateChange }
+                events: { 
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange 
+                }
             });
-            isYtReady = true;
         };
+        
+        function onPlayerReady(event) {
+            isYtReady = true;
+            // If a track was queued, play it now
+            if (pendingTrack) {
+                loadTrack(pendingTrack.albumIndex, pendingTrack.trackIndex);
+                pendingTrack = null;
+            }
+        }
 
         function onPlayerStateChange(event) {
             if (event.data === YT.PlayerState.CUED) ytPlayer.playVideo();
@@ -346,7 +358,8 @@
                 if (isYtReady && ytPlayer) {
                     ytPlayer.cueVideoById({ videoId: track.youtubeId });
                 } else {
-                    console.warn("YouTube Player not ready yet.");
+                    console.warn("YouTube Player not ready yet, queuing track.");
+                    pendingTrack = { albumIndex, trackIndex };
                 }
             } else if (track.url) {
                 activePlayerType = 'audio';
@@ -378,7 +391,6 @@
 
         function togglePlayPause() {
             if (currentTrackIndex === -1) return;
-            // FIX: Add guard clause to ensure ytPlayer is ready before use
             if (activePlayerType === 'youtube' && (!isYtReady || !ytPlayer)) {
                 console.warn("Cannot toggle: YouTube Player not ready.");
                 return;
