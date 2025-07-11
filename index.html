@@ -334,6 +334,7 @@
             
             if (state === YT.PlayerState.ENDED) {
                 const currentAlbum = albums[currentPlayingInfo.albumIdx];
+                if (!currentAlbum) return;
                 const nextTrackIdx = currentPlayingInfo.trackIdx + 1;
                 if (nextTrackIdx < currentAlbum.tracks.length) {
                     playTrack(currentPlayingInfo.albumIdx, nextTrackIdx);
@@ -344,19 +345,25 @@
             }
         }
 
-        // --- UI & NAVIGATION ---
+        // --- UI & NAVIGATION (Corrected Logic) ---
         function renderScreen() {
-            screen.innerHTML = '';
+            screen.innerHTML = ''; // Clear the screen first
+
             let headerText = '';
-            let listItems = [];
+            let itemsToRender = [];
+            let selectedIndex = 0;
 
             if (currentView === 'albums') {
                 headerText = 'Álbuns';
-                listItems = albums.map(album => album.name);
+                itemsToRender = albums.map(album => album.name);
+                selectedIndex = selectedAlbumIndex;
             } else if (currentView === 'tracks') {
                 const album = albums[selectedAlbumIndex];
-                headerText = album.name;
-                listItems = album.tracks.map(track => track.title);
+                if (album && album.tracks) { // Safety check for album and tracks
+                    headerText = album.name;
+                    itemsToRender = album.tracks.map(track => track.title);
+                    selectedIndex = selectedTrackIndex;
+                }
             }
             
             const header = document.createElement('div');
@@ -364,14 +371,13 @@
             header.textContent = headerText;
             screen.appendChild(header);
 
-            listItems.forEach((item, index) => {
+            itemsToRender.forEach((itemText, index) => {
                 const div = document.createElement('div');
                 div.className = 'list-item';
-                const currentIndex = (currentView === 'albums') ? selectedAlbumIndex : selectedTrackIndex;
-                if (index === currentIndex) {
+                if (index === selectedIndex) {
                     div.classList.add('selected');
                 }
-                div.textContent = item;
+                div.textContent = itemText;
                 screen.appendChild(div);
             });
             
@@ -381,15 +387,7 @@
         function scrollToSelectedItem() {
             const selectedItem = screen.querySelector('.list-item.selected');
             if (selectedItem) {
-                const screenRect = screen.getBoundingClientRect();
-                const itemRect = selectedItem.getBoundingClientRect();
-                
-                // Check if item is not fully visible
-                if (itemRect.bottom > screenRect.bottom) {
-                    screen.scrollTop += itemRect.bottom - screenRect.bottom;
-                } else if (itemRect.top < screenRect.top) {
-                    screen.scrollTop -= screenRect.top - itemRect.top;
-                }
+                selectedItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
         }
 
@@ -407,10 +405,10 @@
             if (currentView === 'albums') {
                 currentView = 'tracks';
                 selectedTrackIndex = 0;
+                renderScreen();
             } else if (currentView === 'tracks') {
                 playTrack(selectedAlbumIndex, selectedTrackIndex);
             }
-            renderScreen();
         }
 
         function handleMenu() {
@@ -420,24 +418,21 @@
             }
         }
 
-        // --- PLAYER CONTROLS ---
+        // --- PLAYER CONTROLS (Corrected Logic) ---
         function playTrack(albumIdx, trackIdx) {
             const album = albums[albumIdx];
+            if (!album || !album.tracks) return;
             const track = album.tracks[trackIdx];
-            if (!track || !player) return;
+            if (!track || !player || typeof player.loadVideoById !== 'function') {
+                console.error("Player not ready or track not found.");
+                return;
+            }
             
-            // Prioritize loading and playing the video
             player.loadVideoById(track.videoId);
-            setTimeout(() => {
-                if(player && typeof player.playVideo === 'function') {
-                    player.playVideo();
-                }
-            }, 250);
 
             infoTitle.textContent = track.title;
             currentPlayingInfo = { albumIdx, trackIdx };
             
-            // Handle visual effects after initiating playback
             handleSpecialEffects(album.name);
         }
 
