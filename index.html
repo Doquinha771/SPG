@@ -59,9 +59,22 @@
             justify-content: center;
             align-items: center;
             position: relative;
+            overflow: hidden;
         }
         
+        #audio-visualizer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.3;
+        }
+
         .player-content {
+            z-index: 2;
+            position: relative;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -81,6 +94,7 @@
             font-size: 2.5rem;
             font-weight: 700;
             margin-bottom: 40px;
+            transition: color 0.3s ease;
         }
 
         .progress-container {
@@ -299,6 +313,7 @@
     <div class="player-container">
         <!-- PAINEL DO PLAYER -->
         <main class="player-panel">
+            <canvas id="audio-visualizer"></canvas>
             <div class="player-content">
                 <p id="current-track-artist">SPG</p>
                 <h2 id="current-track-title">Bem-vindo</h2>
@@ -348,7 +363,7 @@
                     artist: "SPG",
                     title: "O Segredo da Felicidade",
                     tracks: [
-                        { title: "Jogo do Bicho", youtubeId: "KNXJe2RxB_o", specialEffect: 'dove' },
+                        { title: "Jogo do Bicho", youtubeId: "KNXJe2RxB_o" },
                         // Adicione outras músicas deste álbum aqui
                     ]
                 },
@@ -356,6 +371,9 @@
                     artist: "Artista Exemplo",
                     title: "Exemplos de Áudio",
                     tracks: [
+                         // IMPORTANTE: Para o visualizador de áudio funcionar, o link do MP3
+                         // precisa estar em um servidor com CORS habilitado (ex: Vercel, Netlify).
+                         // Links de servidores genéricos (como SoundHelix) podem ser bloqueados.
                         { title: "SoundHelix Song 1", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
                         { title: "SoundHelix Song 2", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
                     ]
@@ -377,20 +395,26 @@
                 prevBtn: document.getElementById('prev-btn'),
                 audioPlayer: document.getElementById('audio-player'),
                 doveElement: document.getElementById('special-effect-dove'),
+                visualizerCanvas: document.getElementById('audio-visualizer'),
             };
 
-            // --- Variáveis de Estado ---
+            // --- Variáveis de Estado e Áudio ---
             let ytPlayer;
             let currentAlbumIndex = -1;
             let currentTrackIndex = -1;
             let isPlaying = false;
             let activePlayerType = null;
             let progressInterval;
+            let audioContext, analyser, sourceNode, dataArray;
+            let animationFrameId;
+
+            const visualizerCtx = dom.visualizerCanvas.getContext('2d');
 
             // --- Configuração do Player do YouTube ---
             window.onYouTubeIframeAPIReady = () => {
                 ytPlayer = new YT.Player('youtube-player', {
                     height: '0', width: '0',
+                    playerVars: { 'controls': 0, 'disablekb': 1 },
                     events: { 'onReady': initializePlayer, 'onStateChange': onPlayerStateChange }
                 });
             };
@@ -401,10 +425,26 @@
                 if (event.data === YT.PlayerState.ENDED) playNext();
             }
 
+            // --- Configuração do Contexto de Áudio para Visualizador ---
+            function setupAudioContext() {
+                if (audioContext) return;
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    analyser = audioContext.createAnalyser();
+                    analyser.fftSize = 256;
+                    sourceNode = audioContext.createMediaElementSource(dom.audioPlayer);
+                    sourceNode.connect(analyser);
+                    analyser.connect(audioContext.destination);
+                    dataArray = new Uint8Array(analyser.frequencyBinCount);
+                } catch (e) {
+                    console.error("AudioContext não é suportado.", e);
+                }
+            }
+
             // --- Funções de Controle Geral ---
             function loadTrack(albumIndex, trackIndex) {
                 if (albumIndex === currentAlbumIndex && trackIndex === currentTrackIndex) {
-                    togglePlayPause(); // Se clicar na mesma música, apenas toca/pausa
+                    togglePlayPause();
                     return;
                 }
 
@@ -430,18 +470,23 @@
                 isPlaying = playing;
                 dom.playIcon.style.display = isPlaying ? 'none' : 'block';
                 dom.pauseIcon.style.display = isPlaying ? 'block' : 'none';
-                dom.playPauseBtn.classList.toggle('active', isPlaying);
 
                 if (isPlaying) {
-                    if (activePlayerType === 'audio') dom.audioPlayer.play().catch(e => console.error(e));
+                    if (activePlayerType === 'audio') {
+                        setupAudioContext();
+                        audioContext.resume();
+                        dom.audioPlayer.play().catch(e => console.error(e));
+                    }
                     progressInterval = setInterval(updateProgress, 500);
-                    if (albums[currentAlbumIndex].tracks[currentTrackIndex].specialEffect === 'dove') {
+                    startVisualizer();
+                    if (albums[currentAlbumIndex].title === 'O Segredo da Felicidade') {
                         dom.doveElement.classList.add('animate');
                         dom.doveElement.style.animationPlayState = 'running';
                     }
                 } else {
                     if (activePlayerType === 'audio') dom.audioPlayer.pause();
                     clearInterval(progressInterval);
+                    stopVisualizer();
                     if (dom.doveElement.classList.contains('animate')) {
                         dom.doveElement.style.animationPlayState = 'paused';
                     }
@@ -520,6 +565,13 @@
                 dom.currentTrackTitle.textContent = track.title;
                 dom.currentTrackArtist.textContent = album.artist;
                 
+                // Lógica para a cor do título "Jogo do Bicho"
+                if (track.title === "Jogo do Bicho") {
+                    dom.currentTrackTitle.style.color = 'var(--accent-secondary)';
+                } else {
+                    dom.currentTrackTitle.style.color = 'var(--text-light)';
+                }
+                
                 document.querySelectorAll('.track-item.playing').forEach(el => el.classList.remove('playing'));
                 document.querySelector(`.album-item[data-album-index='${currentAlbumIndex}'] .track-item[data-track-index='${currentTrackIndex}']`).classList.add('playing');
             }
@@ -556,6 +608,48 @@
                 return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
             }
 
+            // --- Funções do Visualizador ---
+            function drawVisualizer() {
+                if (!isPlaying) return;
+                animationFrameId = requestAnimationFrame(drawVisualizer);
+
+                const canvas = dom.visualizerCanvas;
+                visualizerCtx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                if (activePlayerType === 'audio' && dataArray) {
+                    analyser.getByteFrequencyData(dataArray);
+                    const barWidth = (canvas.width / dataArray.length) * 2;
+                    let x = 0;
+                    for (let i = 0; i < dataArray.length; i++) {
+                        const barHeight = dataArray[i] * 1.5;
+                        visualizerCtx.fillStyle = `rgba(255, 255, 255, ${barHeight / 500})`;
+                        visualizerCtx.fillRect(x, canvas.height - barHeight / 2, barWidth, barHeight);
+                        x += barWidth + 1;
+                    }
+                } else { // Visualizador falso para YouTube
+                    const time = Date.now() * 0.001;
+                    const barCount = 64;
+                    const barWidth = canvas.width / barCount;
+                    for (let i = 0; i < barCount; i++) {
+                        const barHeight = (Math.sin(time + i * 0.2) * 0.5 + 0.5) * 200;
+                        visualizerCtx.fillStyle = `rgba(255, 255, 255, ${barHeight / 800})`;
+                        visualizerCtx.fillRect(i * barWidth, canvas.height - barHeight / 2, barWidth - 2, barHeight);
+                    }
+                }
+            }
+            
+            function startVisualizer() {
+                if (!animationFrameId) {
+                    drawVisualizer();
+                }
+            }
+            
+            function stopVisualizer() {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+                visualizerCtx.clearRect(0, 0, dom.visualizerCanvas.width, dom.visualizerCanvas.height);
+            }
+
             // --- Inicialização e Event Listeners ---
             function initializePlayer() {
                 populateAlbumList();
@@ -564,7 +658,6 @@
                 dom.nextBtn.addEventListener('click', playNext);
                 dom.prevBtn.addEventListener('click', playPrev);
                 dom.progressBar.addEventListener('input', seek);
-                dom.audioPlayer.addEventListener('loadedmetadata', updateProgress);
                 dom.audioPlayer.addEventListener('ended', playNext);
                 dom.audioPlayer.addEventListener('canplay', () => {
                     if (activePlayerType === 'audio') setPlayState(true);
@@ -579,6 +672,14 @@
                         loadTrack(albumIndex, trackIndex);
                     }
                 });
+
+                // Set canvas size
+                const resizeCanvas = () => {
+                    dom.visualizerCanvas.width = dom.visualizerCanvas.offsetWidth;
+                    dom.visualizerCanvas.height = dom.visualizerCanvas.offsetHeight;
+                };
+                resizeCanvas();
+                window.addEventListener('resize', resizeCanvas);
             }
         });
     </script>
