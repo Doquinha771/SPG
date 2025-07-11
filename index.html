@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPG Player - Estilo FL Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos Globais e Variáveis de Cor */
+        :root {
+            --bg-darkest: #20232A;
+            --bg-dark: #2A2D35;
+            --bg-medium: #333740;
+            --bg-light: #454952;
+            --text-light: #E0E0E0;
+            --text-medium: #B0B0B0;
+            --accent-orange: #FF8C00;
+            --accent-green: #4CAF50;
+            --accent-green-dark: #388E3C;
+            --border-color: #4A4E57;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-darkest);
+            color: var(--text-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Container Principal */
+        .fl-studio-container {
+            width: 100%;
+            max-width: 1200px;
+            height: 700px;
+            background-color: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Barra Superior */
+        .top-bar {
+            background-color: var(--bg-darkest);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent-orange);
+            text-shadow: 0 0 5px var(--accent-orange);
+        }
+
+        .logo span {
+            color: var(--text-light);
+            font-weight: 400;
+        }
+
+        .transport-controls button {
+            background: var(--bg-light);
+            border: 1px solid var(--border-color);
+            color: var(--text-light);
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            margin: 0 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .transport-controls button:hover {
+            background-color: var(--accent-green);
+            border-color: var(--accent-green-dark);
+        }
+
+        .transport-controls button.active {
+            background-color: var(--accent-green);
+            box-shadow: 0 0 10px var(--accent-green);
+        }
+
+        .transport-controls svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .time-display {
+            background-color: #1A1C20;
+            padding: 5px 15px;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+            color: var(--text-medium);
+        }
+
+        /* Conteúdo Principal */
+        .main-content {
+            display: flex;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        /* Painel da Playlist */
+        .playlist-panel {
+            width: 300px;
+            background-color: var(--bg-darkest);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .playlist-header {
+            padding: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--bg-medium);
+        }
+
+        .song-list {
+            list-style: none;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+        
+        .song-list::-webkit-scrollbar { width: 8px; }
+        .song-list::-webkit-scrollbar-track { background: var(--bg-darkest); }
+        .song-list::-webkit-scrollbar-thumb { background-color: var(--bg-light); border-radius: 4px; }
+
+        .song-item {
+            padding: 15px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--bg-dark);
+            transition: background-color 0.2s ease;
+        }
+
+        .song-item:hover { background-color: var(--bg-medium); }
+        .song-item.active { background-color: var(--accent-green-dark); color: white; }
+        .song-item .title { font-weight: 600; display: block; margin-bottom: 4px; }
+        .song-item .artist { font-size: 0.85rem; color: var(--text-medium); }
+        .song-item.active .artist { color: var(--text-light); }
+
+        /* Painel do Visualizador */
+        .track-view-panel {
+            flex-grow: 1;
+            background-color: var(--bg-dark);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .track-info {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #current-track-title { font-size: 1.5rem; font-weight: 700; color: var(--text-light); }
+        #current-track-artist { font-size: 1rem; color: var(--text-medium); }
+
+        .visualizer-container {
+            flex-grow: 1;
+            position: relative;
+            background: linear-gradient(to bottom, var(--bg-dark) 0%, #1a1c20 100%);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        #waveform-canvas { width: 100%; height: 100%; display: block; }
+
+        #playhead {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 2px;
+            height: 100%;
+            background-color: var(--accent-orange);
+            box-shadow: 0 0 10px var(--accent-orange);
+            pointer-events: none;
+            transition: left 0.1s linear;
+        }
+        
+        /* Animação da Pomba */
+        #special-effect-dove {
+            position: absolute;
+            display: none; /* Começa escondida */
+            bottom: 25%;
+            left: -150px; /* Começa fora da tela à esquerda */
+            width: 130px;
+            height: auto;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 10;
+        }
+
+        #special-effect-dove.animate {
+            display: block;
+            animation: fly-across 18s linear infinite;
+        }
+
+        @keyframes fly-across {
+            0% { transform: translateX(0) scaleX(1); opacity: 0; }
+            10% { opacity: 0.9; }
+            49% { opacity: 0.9; }
+            50% { transform: translateX(calc(100vw - 450px)) scaleX(-1); opacity: 0.9; }
+            51% { opacity: 0.9; }
+            90% { opacity: 0.9; }
+            100% { transform: translateX(0) scaleX(-1); opacity: 0; }
+        }
+        
+        /* Player do YouTube escondido */
+        #youtube-player {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .fl-studio-container { height: 90vh; }
+            .main-content { flex-direction: column; }
+            .playlist-panel { width: 100%; height: 40%; border-right: none; border-bottom: 1px solid var(--border-color); }
+            .logo { font-size: 1rem; }
+            .transport-controls button { width: 35px; height: 35px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="fl-studio-container">
+        <!-- BARRA SUPERIOR -->
+        <header class="top-bar">
+            <div class="logo">SPG<span>PLAYER</span></div>
+            <div class="transport-controls">
+                <button id="play-pause-btn" title="Play/Pause">
+                    <svg id="play-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
+                    <svg id="pause-icon" viewBox="0 0 24 24" fill="currentColor" style="display: none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path></svg>
+                </button>
+            </div>
+            <div id="time-display" class="time-display">00:00 / 00:00</div>
+        </header>
+
+        <!-- CONTEÚDO PRINCIPAL -->
+        <main class="main-content">
+            <!-- PAINEL DA PLAYLIST -->
+            <aside class="playlist-panel">
+                <div class="playlist-header">SPG ARTISTS</div>
+                <ul id="song-list" class="song-list"></ul>
+            </aside>
+
+            <!-- PAINEL DA TRACK/VISUALIZADOR -->
+            <section class="track-view-panel">
+                <div class="track-info">
+                    <h2 id="current-track-title">Selecione uma música</h2>
+                    <p id="current-track-artist">para começar</p>
+                </div>
+                <div class="visualizer-container">
+                    <canvas id="waveform-canvas"></canvas>
+                    <div id="playhead"></div>
+                    <!-- Imagem da pomba atualizada -->
+                    <img id="special-effect-dove" src="https://png.pngtree.com/png-clipart/20230504/original/pngtree-white-dove-flying-isolated-on-background-png-image_9137695.png" alt="Animação de Pomba Branca">
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Players de Mídia -->
+    <audio id="audio-player" crossorigin="anonymous"></audio>
+    <div id="youtube-player"></div>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // =================================================================
+            // LISTA DE MÚSICAS
+            // =================================================================
+            const playlist = [
+                {
+                    artist: "SPG",
+                    title: "Jogo do Bicho",
+                    youtubeId: "KNXJe2RxB_o", // <<< ID do vídeo do YouTube
+                    album: "O Segredo da Felicidade",
+                    specialEffect: 'dove'
+                },
+                {
+                    artist: "Artista Exemplo 1",
+                    title: "Sua Música Número 1 (MP3)",
+                    url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" // <<< Link direto de MP3
+                },
+            ];
+
+            // --- Seleção de Elementos do DOM ---
+            const audioPlayerEl = document.getElementById('audio-player');
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            const playIcon = document.getElementById('play-icon');
+            const pauseIcon = document.getElementById('pause-icon');
+            const timeDisplay = document.getElementById('time-display');
+            const songListElement = document.getElementById('song-list');
+            const currentTrackTitle = document.getElementById('current-track-title');
+            const currentTrackArtist = document.getElementById('current-track-artist');
+            const playhead = document.getElementById('playhead');
+            const doveElement = document.getElementById('special-effect-dove');
+            const waveformCanvas = document.getElementById('waveform-canvas');
+            const canvasCtx = waveformCanvas.getContext('2d');
+
+            // --- Variáveis de Estado e Animação ---
+            let currentSongIndex = -1;
+            let isPlaying = false;
+            let activePlayer = null; // 'audio' ou 'youtube'
+            let ytPlayer;
+            let progressInterval;
+            let animationFrameId;
+            let audioContext, analyser;
+            let fakeVisualizerTime = 0;
+
+            // --- Configuração do Player do YouTube ---
+            window.onYouTubeIframeAPIReady = function() {
+                ytPlayer = new YT.Player('youtube-player', {
+                    height: '0',
+                    width: '0',
+                    events: {
+                        'onReady': initializePlayer,
+                        'onStateChange': onPlayerStateChange
+                    }
+                });
+            };
+
+            function onPlayerStateChange(event) {
+                if (event.data === YT.PlayerState.PLAYING) {
+                    playSong();
+                } else if (event.data === YT.PlayerState.PAUSED) {
+                    pauseSong();
+                } else if (event.data === YT.PlayerState.ENDED) {
+                    playNextSong();
+                }
+            }
+            
+            // --- Configuração do Visualizador de Áudio ---
+            function setupAudioContext() {
+                if (audioContext) return;
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const source = audioContext.createMediaElementSource(audioPlayerEl);
+                    analyser = audioContext.createAnalyser();
+                    analyser.fftSize = 2048;
+                    source.connect(analyser);
+                    analyser.connect(audioContext.destination);
+                } catch (e) {
+                    console.error("Web Audio API não é suportada neste navegador.", e);
+                }
+            }
+
+
+            // --- Funções de Controle Geral ---
+            function loadSong(index) {
+                if (currentSongIndex === index) return;
+                
+                stopAllPlayers();
+                currentSongIndex = index;
+                const song = playlist[index];
+
+                currentTrackTitle.textContent = song.title;
+                currentTrackArtist.textContent = song.artist;
+                updatePlaylistUI();
+
+                if (song.youtubeId) {
+                    activePlayer = 'youtube';
+                    ytPlayer.loadVideoById({videoId: song.youtubeId});
+                    // O play será acionado pelo onStateChange
+                } else if (song.url) {
+                    activePlayer = 'audio';
+                    audioPlayerEl.src = song.url;
+                    // O play será acionado pelo evento 'canplay'
+                }
+            }
+
+            function playSong() {
+                if (isPlaying) return;
+                isPlaying = true;
+                updatePlayPauseUI(true);
+                
+                if (activePlayer === 'audio') {
+                    setupAudioContext();
+                    audioPlayerEl.play().catch(e => console.error("Erro ao tocar áudio:", e));
+                }
+                
+                startAnimationLoop();
+                startProgressInterval();
+                
+                if (playlist[currentSongIndex]?.specialEffect === 'dove') {
+                    doveElement.classList.add('animate');
+                    doveElement.style.animationPlayState = 'running';
+                }
+            }
+
+            function pauseSong() {
+                if (!isPlaying) return;
+                isPlaying = false;
+                updatePlayPauseUI(false);
+                
+                if (activePlayer === 'youtube') ytPlayer.pauseVideo();
+                else if (activePlayer === 'audio') audioPlayerEl.pause();
+                
+                stopAnimationLoop();
+                stopProgressInterval();
+
+                if (doveElement.classList.contains('animate')) {
+                    doveElement.style.animationPlayState = 'paused';
+                }
+            }
+            
+            function stopAllPlayers() {
+                pauseSong();
+                if (ytPlayer && typeof ytPlayer.stopVideo === 'function') ytPlayer.stopVideo();
+                audioPlayerEl.src = "";
+                activePlayer = null;
+                stopSpecialEffects();
+                resetProgress();
+            }
+
+            function togglePlayPause() {
+                if (currentSongIndex === -1) {
+                    loadSong(0);
+                    return;
+                }
+                if (isPlaying) {
+                    pauseSong();
+                } else {
+                    // Para o YouTube, o onStateChange cuidará de chamar playSong.
+                    if (activePlayer === 'youtube') ytPlayer.playVideo();
+                    else playSong();
+                }
+            }
+
+            function playNextSong() {
+                const nextIndex = (currentSongIndex + 1) % playlist.length;
+                loadSong(nextIndex);
+            }
+            
+            function stopSpecialEffects() {
+                doveElement.classList.remove('animate');
+            }
+
+            // --- Funções de UI e Progresso ---
+            function updatePlayPauseUI(playing) {
+                isPlaying = playing;
+                playPauseBtn.classList.toggle('active', playing);
+                playIcon.style.display = playing ? 'none' : 'block';
+                pauseIcon.style.display = playing ? 'block' : 'none';
+            }
+
+            function populatePlaylist() {
+                songListElement.innerHTML = '';
+                playlist.forEach((song, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'song-item';
+                    li.dataset.index = index;
+                    li.innerHTML = `<span class="title">${song.title}</span><span class="artist">${song.artist}</span>`;
+                    li.addEventListener('click', () => loadSong(index));
+                    songListElement.appendChild(li);
+                });
+            }
+
+            function updatePlaylistUI() {
+                const items = songListElement.querySelectorAll('.song-item');
+                items.forEach((item, index) => {
+                    item.classList.toggle('active', index === currentSongIndex);
+                });
+            }
+            
+            function formatTime(seconds) {
+                const minutes = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            }
+
+            function updateProgress() {
+                let currentTime = 0;
+                let duration = 0;
+                if (activePlayer === 'youtube' && ytPlayer && typeof ytPlayer.getDuration === 'function') {
+                    currentTime = ytPlayer.getCurrentTime();
+                    duration = ytPlayer.getDuration();
+                } else if (activePlayer === 'audio') {
+                    currentTime = audioPlayerEl.currentTime;
+                    duration = audioPlayerEl.duration;
+                }
+
+                if (!isNaN(duration) && duration > 0) {
+                    timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+                    playhead.style.left = `${(currentTime / duration) * 100}%`;
+                }
+            }
+            
+            function resetProgress() {
+                timeDisplay.textContent = '00:00 / 00:00';
+                playhead.style.left = '0%';
+            }
+            
+            function startProgressInterval() {
+                stopProgressInterval();
+                progressInterval = setInterval(updateProgress, 500);
+            }
+            
+            function stopProgressInterval() {
+                clearInterval(progressInterval);
+            }
+            
+            // --- Funções de Animação do Visualizador ---
+            function drawRealVisualizer() {
+                if (!analyser) return;
+                const bufferLength = analyser.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+                analyser.getByteTimeDomainData(dataArray);
+
+                canvasCtx.lineWidth = 2;
+                canvasCtx.strokeStyle = 'rgba(76, 175, 80, 0.7)';
+                canvasCtx.beginPath();
+                const sliceWidth = waveformCanvas.width * 1.0 / bufferLength;
+                let x = 0;
+                for (let i = 0; i < bufferLength; i++) {
+                    const v = dataArray[i] / 128.0;
+                    const y = v * waveformCanvas.height / 2;
+                    if (i === 0) canvasCtx.moveTo(x, y);
+                    else canvasCtx.lineTo(x, y);
+                    x += sliceWidth;
+                }
+                canvasCtx.lineTo(waveformCanvas.width, waveformCanvas.height / 2);
+                canvasCtx.stroke();
+            }
+
+            function drawFakeVisualizer() {
+                fakeVisualizerTime += 0.05;
+                canvasCtx.lineWidth = 2;
+                canvasCtx.strokeStyle = 'rgba(76, 175, 80, 0.7)';
+                canvasCtx.beginPath();
+                const height = waveformCanvas.height;
+                const width = waveformCanvas.width;
+                for (let x = 0; x < width; x++) {
+                    const y = height / 2 + Math.sin(x * 0.03 + fakeVisualizerTime) * (height / 4);
+                    if (x === 0) canvasCtx.moveTo(x, y);
+                    else canvasCtx.lineTo(x, y);
+                }
+                canvasCtx.stroke();
+            }
+
+            function animationLoop() {
+                animationFrameId = requestAnimationFrame(animationLoop);
+                canvasCtx.clearRect(0, 0, waveformCanvas.width, waveformCanvas.height);
+                if (activePlayer === 'audio') {
+                    drawRealVisualizer();
+                } else {
+                    drawFakeVisualizer();
+                }
+            }
+
+            function startAnimationLoop() {
+                if (!animationFrameId) {
+                    animationLoop();
+                }
+            }
+
+            function stopAnimationLoop() {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+
+            // --- Inicialização ---
+            function initializePlayer() {
+                playPauseBtn.addEventListener('click', togglePlayPause);
+                audioPlayerEl.addEventListener('ended', playNextSong);
+                audioPlayerEl.addEventListener('canplay', () => {
+                    if(activePlayer === 'audio') playSong();
+                });
+                
+                populatePlaylist();
+                handleResize();
+            }
+            
+            function handleResize() {
+                waveformCanvas.width = waveformCanvas.clientWidth;
+                waveformCanvas.height = waveformCanvas.clientHeight;
+            }
+            window.addEventListener('resize', handleResize);
+
+            // A inicialização principal é chamada pelo 'onReady' do YouTube
+        });
+    </script>
+</body>
+</html>
