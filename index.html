@@ -224,11 +224,10 @@
             opacity: 1;
         }
 
-        #special-effect-dove {
+        #special-effect-dove img {
+            position: absolute;
             left: -150px;
             width: 130px; height: auto;
-        }
-        #special-effect-dove.animate {
             animation: fly-across-sky 25s linear infinite;
         }
         @keyframes fly-across-sky {
@@ -239,8 +238,6 @@
         }
         
         #blood-effect {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
             background-image: url('https://pluspng.com/img-png/blood-splatter-png-hd-blood-splatter-png-image-2000.png');
             background-size: 150%; background-position: top center; background-repeat: no-repeat;
             mix-blend-mode: screen;
@@ -250,8 +247,8 @@
             animation: drip 10s ease-out forwards;
         }
         @keyframes drip {
-            from { background-position: top center; }
-            to { background-position: bottom center; }
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
         }
 
         #jogo-do-bicho-effect span {
@@ -296,7 +293,6 @@
     
     <div class="app-container">
         <div class="car-stereo-unit" id="car-stereo-unit">
-            <div id="blood-effect"></div>
             <div class="main-display">
                 <div id="track-info">SPG Road Trip</div>
                 <div class="display-bottom-row">
@@ -323,11 +319,13 @@
     </div>
     
     <div id="special-effect-dove" class="special-effect-overlay">
-        <img src="https://png.pngtree.com/png-clipart/20230504/original/pngtree-white-dove-flying-isolated-on-background-png-image_9137695.png" alt="Pomba Branca" style="width:100%">
+        <img src="https://png.pngtree.com/png-clipart/20230504/original/pngtree-white-dove-flying-isolated-on-background-png-image_9137695.png" alt="Pomba Branca">
     </div>
     <div id="jogo-do-bicho-effect" class="special-effect-overlay">
         <span>🐘</span> <span>🐓</span> <span>🐅</span> <span>🐏</span> <span>🦋</span> <span>🐍</span> <span>💰</span>
     </div>
+    <div id="blood-effect" class="special-effect-overlay"></div>
+
     <audio id="audio-player" crossorigin="anonymous"></audio>
     <div id="youtube-player"></div>
 
@@ -450,32 +448,41 @@
             dom.pauseIcon.style.display = isPlaying ? 'block' : 'none';
             dom.playPauseBtn.classList.toggle('playing', isPlaying);
 
-            // Clear all special effects before applying new ones
-            dom.doveElement.classList.remove('animate');
-            dom.bloodEffect.classList.remove('active');
-            dom.jogoDoBichoEffect.classList.remove('active');
+            updateSpecialEffects(playing);
 
-            if (isPlaying) {
+            if (playing) {
                 if (activePlayerType === 'audio') dom.audioPlayer.play().catch(e => console.error(e));
                 progressInterval = setInterval(updateProgress, 500);
                 startVisualizer();
-                
-                // Special Effects Logic
-                const currentTrack = albums[currentAlbumIndex].tracks[currentTrackIndex];
-                if (albums[currentAlbumIndex].title === 'O Segredo da Felicidade') {
-                    dom.doveElement.classList.add('animate');
+            } else {
+                if (activePlayerType === 'audio') dom.audioPlayer.pause();
+                clearInterval(progressInterval);
+                stopVisualizer();
+            }
+        }
+
+        function updateSpecialEffects(playing) {
+            // Reset all effects first
+            dom.doveElement.classList.remove('active');
+            dom.bloodEffect.classList.remove('active');
+            dom.jogoDoBichoEffect.classList.remove('active');
+
+            if (playing && currentAlbumIndex > -1) {
+                const currentAlbum = albums[currentAlbumIndex];
+                const currentTrack = currentAlbum.tracks[currentTrackIndex];
+
+                // Album-specific effect
+                if (currentAlbum.title === 'O Segredo da Felicidade') {
+                    dom.doveElement.classList.add('active');
                 }
+
+                // Track-specific effect
                 if (currentTrack.specialEffect === 'blood') {
                     dom.bloodEffect.classList.add('active');
                 }
                 if (currentTrack.specialEffect === 'bicho') {
                     dom.jogoDoBichoEffect.classList.add('active');
                 }
-
-            } else {
-                if (activePlayerType === 'audio') dom.audioPlayer.pause();
-                clearInterval(progressInterval);
-                stopVisualizer();
             }
         }
 
