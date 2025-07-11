@@ -42,6 +42,13 @@
             overflow: hidden;
         }
 
+        .player-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+        }
+
         /* Main Player Container */
         .ipod-body {
             width: 100%;
@@ -123,7 +130,7 @@
             color: var(--screen-text);
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: space-around;
             transition: background-color 0.3s;
         }
 
@@ -138,24 +145,40 @@
         
         .playback-info {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
             width: 100%;
             font-family: 'VT323', monospace;
             font-size: 18px;
         }
         
-        .playback-controls {
+        /* Side Controls */
+        .side-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .side-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #e1e1e1, #f9f9f9);
+            border: 1px solid #ccc;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.2);
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 20px;
-            width: 100%;
+            font-size: 20px;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.1s ease-in-out;
+        }
+        .side-btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            background: linear-gradient(145deg, #d1d1d1, #e9e9e9);
         }
 
-        .control-btn { cursor: pointer; font-size: 20px; opacity: 0.7; }
-        .control-btn:hover { opacity: 1; }
-        
         /* Visualizer */
         #visualizer { display: flex; justify-content: center; align-items: flex-end; height: 25px; gap: 5px; opacity: 0; transition: opacity 0.5s ease-out; }
         #visualizer.active { opacity: 0.8; }
@@ -204,10 +227,15 @@
         .dove { position: absolute; font-size: 2.5rem; opacity: 0; animation: fly-across 10s linear infinite; }
         @keyframes fly-across { 0% { transform: translateX(-120px); opacity: 0; } 10% { opacity: 0.7; } 90% { opacity: 0.7; } 100% { transform: translateX(380px); opacity: 0; } }
         
+        /* Bouncing Animation */
+        @keyframes body-bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.01); } }
+        .ipod-body.bouncing { animation: body-bounce 0.3s infinite cubic-bezier(0.5, 0.05, 1, 0.5); }
+        
         /* Hyperpop Theme */
         .ipod-body.hyperpop-theme { --ipod-bg: #1a0000; --wheel-color: #330000; --screen-bg: #4d0000; --screen-text: #ff4d4d; --selected-bg: #ff4d4d; --selected-text: #1a0000; --accent-color: #ff0000; --button-color: #ff8080; --wheel-border: #660000; }
-        @keyframes screen-bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
-        .screen-container.bouncing { animation: screen-bounce 0.3s infinite cubic-bezier(0.5, 0.05, 1, 0.5); }
+        
+        /* Contrato de Sangue Theme */
+        .ipod-body.contrato-theme { --ipod-bg: #000000; --wheel-color: #1a1a1a; --screen-bg: #111; --screen-text: #ff0000; --selected-bg: #ff0000; --selected-text: #000000; --accent-color: #ff0000; --button-color: #fff; --wheel-border: #ff0000; }
 
         /* Full Body Blood Effect */
         #full-blood-effect { z-index: 12; }
@@ -219,13 +247,19 @@
         @keyframes fall-bg { from { top: -10%; } to { top: 110%; } }
 
         /* Contract Watermark */
-        #contract-watermark { z-index: 3; display: none; justify-content: center; align-items: center; opacity: 0.15; font-family: 'Cedarville Cursive', cursive; font-size: 80px; color: darkred; transform: rotate(-25deg); }
+        #contract-watermark { z-index: 3; display: none; justify-content: center; align-items: center; opacity: 0.15; font-family: 'Cedarville Cursive', cursive; font-size: 80px; color: var(--accent-color); transform: rotate(-25deg); }
 
         /* Fire Effect */
         #fire-effect { z-index: 11; }
         .flame { position: absolute; bottom: -50px; width: 60px; height: 150px; background-color: orange; border-radius: 50% 50% 0 0; filter: blur(10px); animation: flame-up 2s infinite ease-in-out; }
         .flame.red { background-color: red; animation-delay: 0.5s; width: 40px; }
         @keyframes flame-up { 0%, 100% { transform: scaleY(1) scaleX(1); opacity: 0.8; } 50% { transform: scaleY(1.5) scaleX(1.2); opacity: 1; } }
+
+        /* Circus Theme */
+        .ipod-body.circus-theme { background: repeating-linear-gradient(45deg, #f5f5f7, #f5f5f7 10px, #ffdddd 10px, #ffdddd 20px); --wheel-color: #ffeb3b; --button-color: #e91e63; }
+        #circus-lights { z-index: 4; }
+        .light { position: absolute; width: 10px; height: 10px; border-radius: 50%; background: white; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
 
         /* Luto Theme */
         .ipod-body.luto-theme { filter: grayscale(1); }
@@ -236,44 +270,46 @@
     </style>
 </head>
 <body>
-    <div id="background-effects" class="effect-container" style="display: block; z-index: 1;"></div>
-
-    <div class="ipod-body" id="ipod-body">
-        <div id="full-blood-effect" class="effect-container"></div>
-        <div id="fire-effect" class="effect-container"></div>
-        
-        <div class="screen-container" id="screen-container">
-            <div id="screen" class="screen"></div>
-            <div id="contract-watermark" class="effect-container">Tonykillrecords</div>
-            <div id="luto-text-overlay" class="effect-container">Luto Eterno</div>
-            <div id="bomb-effect" class="effect-container"></div>
-        </div>
-
-        <div id="info-display" class="info-display">
-            <div id="info-title" class="info-title">SPG RetroPlayer</div>
-            <div id="visualizer">
-                <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+    <div class="player-wrapper">
+        <div id="background-effects" class="effect-container" style="display: block; z-index: 1;"></div>
+        <div class="ipod-body" id="ipod-body">
+            <div id="full-blood-effect" class="effect-container"></div>
+            <div id="fire-effect" class="effect-container"></div>
+            
+            <div class="screen-container" id="screen-container">
+                <div id="screen" class="screen"></div>
+                <div id="contract-watermark" class="effect-container">Tonykillrecords</div>
+                <div id="circus-lights" class="effect-container"></div>
+                <div id="luto-text-overlay" class="effect-container">Luto Eterno</div>
+                <div id="bomb-effect" class="effect-container"></div>
             </div>
-            <div class="playback-info">
-                <div id="time-display">0:00 / 0:00</div>
-                <div class="playback-controls">
-                    <span id="volume-down" class="control-btn">🔉</span>
-                    <span id="repeat-btn" class="control-btn">🔁</span>
-                    <span id="volume-up" class="control-btn">🔊</span>
+
+            <div id="info-display" class="info-display">
+                <div id="info-title" class="info-title">SPG RetroPlayer</div>
+                <div id="visualizer">
+                    <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                </div>
+                <div class="playback-info">
+                    <div id="time-display">0:00 / 0:00</div>
                 </div>
             </div>
-        </div>
 
-        <div class="click-wheel">
-            <div id="menu-btn" class="wheel-button menu">MENU</div>
-            <div id="next-btn" class="wheel-button next">►</div>
-            <div id="prev-btn" class="wheel-button prev">◄</div>
-            <div id="play-pause-btn" class="wheel-button play-pause">▶/■</div>
-            <div id="center-btn" class="center-button"></div>
+            <div class="click-wheel">
+                <div id="menu-btn" class="wheel-button menu">MENU</div>
+                <div id="next-btn" class="wheel-button next">►</div>
+                <div id="prev-btn" class="wheel-button prev">◄</div>
+                <div id="play-pause-btn" class="wheel-button play-pause">▶/■</div>
+                <div id="center-btn" class="center-button"></div>
+            </div>
+            
+            <div id="engraving">Ipods do Nines e Samuel Iradossssssssssss</div>
+            <div id="peace-doves-container" class="effect-container"></div>
         </div>
-        
-        <div id="engraving">Ipods do Nines e Samuel Iradossssssssssss</div>
-        <div id="peace-doves-container" class="effect-container"></div>
+        <div class="side-controls">
+            <span id="volume-up" class="side-btn">🔊</span>
+            <span id="repeat-btn" class="side-btn">🔁</span>
+            <span id="volume-down" class="side-btn">🔉</span>
+        </div>
     </div>
 
     <div id="youtube-player" class="hidden-player"></div>
@@ -303,7 +339,7 @@
         let selectedAlbumIndex = 0;
         let selectedTrackIndex = 0;
         let currentPlayingInfo = { albumIdx: -1, trackIdx: -1 };
-        let repeatMode = 0; // 0: no repeat, 1: repeat all, 2: repeat one
+        let repeatMode = 0; // 0: no repeat, 1: repeat one, 2: repeat all
         let timeInterval, effectInterval;
 
         // --- DOM ELEMENTS ---
@@ -320,6 +356,7 @@
         const contractWatermark = document.getElementById('contract-watermark');
         const lutoTextOverlay = document.getElementById('luto-text-overlay');
         const bombEffectContainer = document.getElementById('bomb-effect');
+        const circusLightsContainer = document.getElementById('circus-lights');
         const dovesContainer = document.getElementById('peace-doves-container');
 
         // --- ASYNC YOUTUBE API LOAD ---
@@ -368,7 +405,7 @@
             let selectedIndex = 0;
 
             if (currentView === 'albums') {
-                headerText = 'Álbuns';
+                headerText = 'SPG RetroPlayer';
                 itemsToRender = albums.map(album => album.name);
                 selectedIndex = selectedAlbumIndex;
             } else if (currentView === 'tracks') {
@@ -419,7 +456,7 @@
             if (currentView === 'albums') {
                 currentView = 'tracks';
                 selectedTrackIndex = 0;
-                handleThemeEffects(albums[selectedAlbumIndex].name, ''); // Apply album theme on select
+                handleThemeEffects(albums[selectedAlbumIndex].name, '');
                 renderScreen();
             } else if (currentView === 'tracks') {
                 playTrack(selectedAlbumIndex, selectedTrackIndex);
@@ -429,16 +466,16 @@
         function handleMenu() {
             if (currentView === 'tracks') {
                 currentView = 'albums';
-                handleThemeEffects('', '');
+                // Effects are no longer reset here to make them persistent
                 renderScreen();
             }
         }
 
         // --- PLAYER CONTROLS ---
         function playTrack(albumIdx, trackIdx) {
-            clearInterval(timeInterval);
-            clearInterval(effectInterval);
-
+            // Reset effects when a new track is played
+            handleThemeEffects('', ''); 
+            
             const album = albums[albumIdx];
             if (!album || !album.tracks) return;
             const track = album.tracks[trackIdx];
@@ -450,6 +487,7 @@
             infoTitle.textContent = track.title;
             currentPlayingInfo = { albumIdx, trackIdx };
             
+            // Apply new effects
             handleThemeEffects(album.name, track.title);
         }
 
@@ -473,7 +511,9 @@
             if (player && typeof player.getCurrentTime === 'function') {
                 const currentTime = player.getCurrentTime();
                 const duration = player.getDuration();
-                timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+                if (!isNaN(duration)) {
+                    timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+                }
             }
         }
         
@@ -486,8 +526,8 @@
         function toggleRepeat() {
             repeatMode = (repeatMode + 1) % 3;
             if (repeatMode === 0) repeatBtn.textContent = '🔁';
-            if (repeatMode === 1) repeatBtn.textContent = '🔂'; // Repeat one
-            if (repeatMode === 2) repeatBtn.textContent = '🔁¹'; // Repeat all
+            if (repeatMode === 1) repeatBtn.textContent = '🔂';
+            if (repeatMode === 2) repeatBtn.textContent = '🔁¹';
         }
         
         function handlePlaybackEnd() {
@@ -518,16 +558,14 @@
 
         // --- SPECIAL EFFECTS ---
         function handleThemeEffects(albumName, trackTitle) {
-            // Reset all effects first
             clearInterval(effectInterval);
-            [dovesContainer, fullBloodEffect, fireEffect, backgroundEffects, contractWatermark, lutoTextOverlay, bombEffectContainer].forEach(el => {
+            [dovesContainer, fullBloodEffect, fireEffect, backgroundEffects, contractWatermark, lutoTextOverlay, bombEffectContainer, circusLightsContainer].forEach(el => {
                 el.innerHTML = '';
                 el.style.display = 'none';
             });
-            ipodBody.classList.remove('hyperpop-theme', 'luto-theme', 'circus-theme');
+            ipodBody.classList.remove('hyperpop-theme', 'luto-theme', 'circus-theme', 'contrato-theme', 'bouncing');
             screenContainer.classList.remove('bouncing');
 
-            // Apply effects based on album or track
             const peaceAlbums = ["SPG - O SEGREDO DA FELICIDADE", "SPG - PAZ MUNDIAL (TOUR 2012)"];
             
             if (trackTitle === "ASSASSINATOS") {
@@ -542,7 +580,7 @@
                 }, 300);
             } else if (trackTitle === "JOGO DO BICHO") {
                 backgroundEffects.style.display = 'block';
-                const items = ['🦓', '🐅', '🐘', '🦌', '🐍', '🐒', '🐖', '🐑', '🐊', '💰'];
+                const items = ['🦓', '🐅', '🐘', '🦌', '�', '🐒', '🐖', '🐑', '🐊', '💰', '👑', '💎'];
                 effectInterval = setInterval(() => {
                     const item = document.createElement('div');
                     item.className = 'bet-item-bg';
@@ -551,10 +589,10 @@
                     item.style.animationDuration = `${Math.random() * 5 + 5}s`;
                     backgroundEffects.appendChild(item);
                     setTimeout(() => item.remove(), 10000);
-                }, 500);
+                }, 200);
             } else if (trackTitle === "O CIRCO VAI PEGA FOGO") {
                 fireEffect.style.display = 'block';
-                fireEffect.innerHTML = '<div class="flame"></div><div class="flame red"></div><div class="flame"></div><div class="flame red"></div>';
+                fireEffect.innerHTML = '<div class="flame"></div><div class="flame red"></div><div class="flame"></div><div class="flame red"></div><div class="flame"></div>';
             } else if (trackTitle === "Gabriel pinto da silva (rip)") {
                 ipodBody.classList.add('luto-theme');
                 lutoTextOverlay.style.display = 'flex';
@@ -568,12 +606,26 @@
                     setTimeout(() => bomb.remove(), 500);
                 }, 2000);
             } else if (albumName === "SPG IV - CONTRATO DE SANGUE") {
+                ipodBody.classList.add('contrato-theme', 'bouncing');
                 contractWatermark.style.display = 'flex';
             } else if (albumName === "SPG Hyperpop") {
                 ipodBody.classList.add('hyperpop-theme');
                 screenContainer.classList.add('bouncing');
             } else if (albumName === "Palhaço Corp - Mil e uma noites no circo") {
-                ipodBody.classList.add('circus-theme'); // To be added in CSS
+                ipodBody.classList.add('circus-theme');
+                circusLightsContainer.style.display = 'block';
+                const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'];
+                for(let i=0; i<20; i++) {
+                    const light = document.createElement('div');
+                    light.className = 'light';
+                    light.style.background = colors[i % colors.length];
+                    light.style.animationDelay = `${i * 0.1}s`;
+                    if(i < 6) { light.style.top = '0'; light.style.left = `${10 + i * 15}%`; }
+                    else if (i < 11) { light.style.right = '0'; light.style.top = `${10 + (i-6) * 18}%`; }
+                    else if (i < 16) { light.style.bottom = '0'; light.style.left = `${10 + (i-11) * 18}%`; }
+                    else { light.style.left = '0'; light.style.top = `${10 + (i-16) * 20}%`; }
+                    circusLightsContainer.appendChild(light);
+                }
             } else if (peaceAlbums.includes(albumName)) {
                 dovesContainer.style.display = 'block';
                 for (let i = 0; i < 5; i++) {
@@ -590,7 +642,7 @@
 
         // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
-            loadYouTubeAPI(); // Load API dynamically
+            loadYouTubeAPI();
             document.getElementById('next-btn').addEventListener('click', () => navigate(1));
             document.getElementById('prev-btn').addEventListener('click', () => navigate(-1));
             document.getElementById('center-btn').addEventListener('click', handleSelect);
@@ -603,3 +655,4 @@
     </script>
 </body>
 </html>
+�
