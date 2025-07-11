@@ -6,7 +6,7 @@
     <title>SPG RetroPlayer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=VT323&family=Inter:wght@400;700&family=Cedarville+Cursive&display=swap" rel="stylesheet">
     <style>
         /* CSS Variables for iPod Classic theme */
         :root {
@@ -54,7 +54,7 @@
             padding: 25px; /* Adjusted */
             display: flex;
             flex-direction: column;
-            gap: 25px; /* Adjusted */
+            gap: 15px; /* Adjusted */
             position: relative;
             overflow: hidden;
             transition: background-color 0.3s;
@@ -67,6 +67,8 @@
             border-radius: 12px; /* Adjusted */
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
             transition: transform 0.3s;
+            position: relative;
+            overflow: hidden;
         }
         .screen {
             background-color: var(--screen-bg);
@@ -79,6 +81,8 @@
             border: 2px solid var(--screen-border);
             scroll-behavior: smooth; /* Smooth scrolling */
             transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+            position: relative;
+            z-index: 2;
         }
         
         /* Hide scrollbar */
@@ -180,7 +184,7 @@
             height: 210px; /* Increased */
             background-color: var(--wheel-color);
             border-radius: 50%;
-            margin: 15px auto; /* Adjusted */
+            margin: 10px auto 0; /* Adjusted */
             position: relative;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             border: 2px solid var(--wheel-border);
@@ -223,50 +227,107 @@
             left: -9999px;
         }
         
-        /* Peace Doves Animation */
-        #peace-doves-container {
+        /* Engraving */
+        #engraving {
+            font-size: 9px;
+            color: #bbb;
+            text-align: center;
+            margin-top: 5px;
+            text-shadow: 1px 1px 1px #fff;
+        }
+        
+        /* --- SPECIAL EFFECTS --- */
+        .effect-container {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             pointer-events: none;
             z-index: 10;
             display: none;
+            overflow: hidden;
         }
+        
+        /* Peace Doves */
         .dove {
             position: absolute;
-            font-size: 2.5rem; /* Adjusted */
+            font-size: 2.5rem;
             opacity: 0;
-            animation: fly-across linear infinite;
+            animation: fly-across 10s linear infinite;
         }
         @keyframes fly-across {
             0% { transform: translateX(-120px); opacity: 0; }
-            10% { opacity: 0.7; }
-            90% { opacity: 0.7; }
+            10% { opacity: 0.7; } 90% { opacity: 0.7; }
             100% { transform: translateX(380px); opacity: 0; }
         }
         
         /* Hyperpop Theme */
         .ipod-body.hyperpop-theme {
-            --ipod-bg: #1a0000;
-            --wheel-color: #330000;
-            --screen-bg: #4d0000;
-            --screen-text: #ff4d4d;
-            --selected-bg: #ff4d4d;
-            --selected-text: #1a0000;
-            --accent-color: #ff0000;
-            --button-color: #ff8080;
-            --wheel-border: #660000;
+            --ipod-bg: #1a0000; --wheel-color: #330000; --screen-bg: #4d0000;
+            --screen-text: #ff4d4d; --selected-bg: #ff4d4d; --selected-text: #1a0000;
+            --accent-color: #ff0000; --button-color: #ff8080; --wheel-border: #660000;
         }
-
         @keyframes screen-bounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.03); }
+            0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); }
         }
-
         .screen-container.bouncing {
             animation: screen-bounce 0.3s infinite cubic-bezier(0.5, 0.05, 1, 0.5);
+        }
+
+        /* Blood Effect */
+        #blood-effect { z-index: 11; }
+        .blood-overlay {
+            width: 100%; height: 100%;
+            background: radial-gradient(circle, rgba(255,0,0,0) 0%, rgba(139,0,0,0.4) 100%);
+            animation: blood-pulse 2s infinite alternate;
+        }
+        .splatter {
+            position: absolute;
+            width: 50px; height: 50px;
+            background: darkred;
+            border-radius: 40% 60% 30% 70% / 60% 30% 70% 40%;
+            opacity: 0.8;
+            animation: blood-pulse 1.5s infinite alternate;
+        }
+        @keyframes blood-pulse {
+            from { opacity: 0.5; transform: scale(1); }
+            to { opacity: 0.8; transform: scale(1.1); }
+        }
+
+        /* Betting House Effect */
+        .bet-item {
+            position: absolute;
+            font-size: 2rem;
+            animation: fall 5s linear infinite;
+        }
+        @keyframes fall {
+            from { top: -50px; transform: rotate(0deg); }
+            to { top: 100%; transform: rotate(360deg); }
+        }
+
+        /* Contract Effect */
+        #contract-effect {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0,0,0,0.5);
+        }
+        .contract-paper {
+            width: 80%;
+            padding: 20px;
+            background: #fdf5e6;
+            border: 2px solid #d2b48c;
+            text-align: center;
+            font-family: 'VT323', monospace;
+            color: #333;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.5);
+        }
+        .contract-paper h3 { font-size: 24px; color: darkred; }
+        .contract-paper p { font-size: 18px; margin-top: 10px; }
+        .signature {
+            font-family: 'Cedarville Cursive', cursive;
+            font-size: 28px;
+            color: darkred;
+            margin-top: 20px;
         }
 
     </style>
@@ -278,18 +339,15 @@
             <div id="screen" class="screen">
                 <!-- Content generated by JS -->
             </div>
+            <div id="blood-effect" class="effect-container"></div>
+            <div id="betting-house-effect" class="effect-container"></div>
+            <div id="contract-effect" class="effect-container"></div>
         </div>
 
         <div id="info-display" class="info-display">
             <div id="info-title" class="info-title">SPG RetroPlayer</div>
             <div id="visualizer">
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
+                <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
             </div>
         </div>
 
@@ -301,7 +359,8 @@
             <div id="center-btn" class="center-button"></div>
         </div>
         
-        <div id="peace-doves-container"></div>
+        <div id="engraving">Ipods do Nines e Samuel Iradossssssssssss</div>
+        <div id="peace-doves-container" class="effect-container"></div>
     </div>
 
     <!-- Hidden div for the YouTube player -->
@@ -328,7 +387,7 @@
 
         // --- STATE ---
         let player;
-        let currentView = 'albums'; // 'albums' or 'tracks'
+        let currentView = 'albums';
         let selectedAlbumIndex = 0;
         let selectedTrackIndex = 0;
         let currentPlayingInfo = { albumIdx: -1, trackIdx: -1 };
@@ -340,8 +399,11 @@
         const infoTitle = document.getElementById('info-title');
         const visualizer = document.getElementById('visualizer');
         const dovesContainer = document.getElementById('peace-doves-container');
+        const bloodEffectContainer = document.getElementById('blood-effect');
+        const bettingEffectContainer = document.getElementById('betting-house-effect');
+        const contractEffectContainer = document.getElementById('contract-effect');
 
-        // --- ASYNC YOUTUBE API LOAD (GitHub Pages Fix) ---
+        // --- ASYNC YOUTUBE API LOAD ---
         function loadYouTubeAPI() {
             const tag = document.createElement('script');
             tag.src = "https://www.youtube.com/iframe_api";
@@ -380,14 +442,14 @@
                 } else {
                     infoTitle.textContent = "Fim da lista";
                     visualizer.classList.remove('active');
+                    handleThemeEffects('', '');
                 }
             }
         }
 
         // --- UI & NAVIGATION ---
         function renderScreen() {
-            screen.innerHTML = ''; // Clear the screen first
-
+            screen.innerHTML = '';
             let headerText = '';
             let itemsToRender = [];
             let selectedIndex = 0;
@@ -453,7 +515,7 @@
         function handleMenu() {
             if (currentView === 'tracks') {
                 currentView = 'albums';
-                handleThemeEffects(''); // Reset theme when going back to menu
+                handleThemeEffects('', '');
                 renderScreen();
             }
         }
@@ -463,20 +525,19 @@
             const album = albums[albumIdx];
             if (!album || !album.tracks) return;
             const track = album.tracks[trackIdx];
-            if (!track || !player || typeof player.loadVideoById !== 'function') {
-                console.error("Player not ready or track not found.");
-                return;
-            }
+            if (!track || !player || typeof player.loadVideoById !== 'function') return;
             
-            player.loadVideoById(track.videoId);
-            // The onStateChange event will handle playing the video once it's cued.
-            // A small timeout helps ensure playVideo is called after load.
-            setTimeout(() => player.playVideo(), 250);
+            player.loadVideoById(track.videoId, 0, "large");
+            setTimeout(() => {
+                if(player && typeof player.playVideo === 'function') {
+                    player.playVideo();
+                }
+            }, 500); // Increased timeout slightly for stability
 
             infoTitle.textContent = track.title;
             currentPlayingInfo = { albumIdx, trackIdx };
             
-            handleThemeEffects(album.name);
+            handleThemeEffects(album.name, track.title);
         }
 
         function togglePlayPause() {
@@ -490,16 +551,44 @@
         }
         
         // --- SPECIAL EFFECTS ---
-        function handleThemeEffects(albumName) {
+        function handleThemeEffects(albumName, trackTitle) {
             // Reset all effects first
             dovesContainer.style.display = 'none';
-            dovesContainer.innerHTML = '';
+            bloodEffectContainer.style.display = 'none';
+            bettingEffectContainer.style.display = 'none';
+            contractEffectContainer.style.display = 'none';
             ipodBody.classList.remove('hyperpop-theme');
             screenContainer.classList.remove('bouncing');
 
-            // Apply effects based on album
+            // Apply effects based on album or track
             const peaceAlbums = ["SPG - O SEGREDO DA FELICIDADE", "SPG - PAZ MUNDIAL (TOUR 2012)"];
-            if (peaceAlbums.includes(albumName)) {
+            
+            if (trackTitle === "ASSASSINATOS") {
+                bloodEffectContainer.innerHTML = '<div class="blood-overlay"></div><div class="splatter"></div><div class="splatter"></div>';
+                const splatters = bloodEffectContainer.querySelectorAll('.splatter');
+                splatters[0].style.cssText = 'top: 20%; left: 15%; transform: scale(1.2);';
+                splatters[1].style.cssText = 'top: 50%; left: 60%;';
+                bloodEffectContainer.style.display = 'block';
+            } else if (trackTitle === "JOGO DO BICHO") {
+                bettingEffectContainer.innerHTML = '';
+                const items = ['🦓', '🐅', '🐘', '🦌', '🐍', '🃏', '♠️', '♥️'];
+                for(let i = 0; i < 10; i++) {
+                    const item = document.createElement('div');
+                    item.className = 'bet-item';
+                    item.textContent = items[Math.floor(Math.random() * items.length)];
+                    item.style.left = `${Math.random() * 90}%`;
+                    item.style.animationDuration = `${Math.random() * 3 + 4}s`;
+                    item.style.animationDelay = `${Math.random() * 4}s`;
+                    bettingEffectContainer.appendChild(item);
+                }
+                bettingEffectContainer.style.display = 'block';
+            } else if (albumName === "SPG IV - CONTRATO DE SANGUE") {
+                contractEffectContainer.innerHTML = '<div class="contract-paper"><h3>Contrato de Sangue</h3><p>Este som pertence a:</p><div class="signature">Tonykillrecords</div></div>';
+                contractEffectContainer.style.display = 'flex';
+            } else if (albumName === "SPG Hyperpop") {
+                ipodBody.classList.add('hyperpop-theme');
+                screenContainer.classList.add('bouncing');
+            } else if (peaceAlbums.includes(albumName)) {
                 dovesContainer.innerHTML = '';
                 for (let i = 0; i < 5; i++) {
                     const dove = document.createElement('div');
@@ -511,9 +600,6 @@
                     dovesContainer.appendChild(dove);
                 }
                 dovesContainer.style.display = 'block';
-            } else if (albumName === "SPG Hyperpop") {
-                ipodBody.classList.add('hyperpop-theme');
-                screenContainer.classList.add('bouncing');
             }
         }
 
