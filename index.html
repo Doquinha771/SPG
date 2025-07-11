@@ -446,6 +446,10 @@
                 loadTrack(0, 0);
                 return;
             }
+            if (activePlayerType === 'youtube' && !isYtReady) {
+                console.warn("Cannot toggle: YouTube Player not ready.");
+                return;
+            }
             const shouldPlay = !isPlaying;
             if (activePlayerType === 'youtube') {
                 shouldPlay ? ytPlayer.playVideo() : ytPlayer.pauseVideo();
